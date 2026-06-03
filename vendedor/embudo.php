@@ -67,9 +67,14 @@ try {
                         <div class="card-body p-3">
                             <h6 class="card-title fw-bold m-0"><?php echo htmlspecialchars($cliente['nombre_completo']); ?></h6>
                             <p class="small text-muted mb-2"><i class="bi bi-envelope"></i> <?php echo htmlspecialchars($cliente['correo']); ?></p>
-                            <a href="etapa3_cita.php?id=<?php echo $cliente['id']; ?>" class="btn btn-sm btn-outline-dark w-100 rounded-pill">
-                                Avanzar a Cita <i class="bi bi-arrow-right"></i>
-                            </a>
+                            
+                            <button class="btn btn-sm btn-outline-dark w-100 rounded-pill" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalCita"
+                                    data-id="<?php echo $cliente['id']; ?>"
+                                    data-nombre="<?php echo htmlspecialchars($cliente['nombre_completo']); ?>">
+                                Registrar Cita Realizada <i class="bi bi-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -80,6 +85,21 @@ try {
     <div class="col-md-3 min-w-250">
         <div class="bg-light border rounded-3 p-3 h-100 shadow-sm border-top border-4 border-danger">
             <h6 class="fw-bold text-danger text-uppercase mb-3">3. Citas Realizadas</h6>
+            
+            <?php foreach ($clientes as $cliente): ?>
+                <?php if ($cliente['etapa_actual'] == '3'): ?>
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body p-3">
+                            <h6 class="card-title fw-bold m-0"><?php echo htmlspecialchars($cliente['nombre_completo']); ?></h6>
+                            <p class="small text-muted mb-2"><i class="bi bi-check-circle-fill text-danger"></i> Reunión concretada</p>
+                            
+                            <button class="btn btn-sm btn-danger w-100 rounded-pill">
+                                Avanzar a Venta <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            <?php endforeach; ?>
         </div>
     </div>
 
@@ -147,7 +167,11 @@ try {
                   </div>
                   <div class="col-md-6 mb-3">
                       <label class="form-label fw-bold">Hora</label>
-                      <input type="time" class="form-control" name="hora_cita" required>
+                      <input type="text" class="form-control" name="hora_cita" id="inputHoraFormato" required 
+                             placeholder="Ej: 14:30" 
+                             maxlength="5"
+                             pattern="^([01]\d|2[0-3]):([0-5]\d)$"
+                             title="Ingresa una hora válida en formato 24h (Ej: 14:30)">
                   </div>
               </div>
           </div>
@@ -160,15 +184,68 @@ try {
   </div>
 </div>
 
+<div class="modal fade" id="modalCita" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title fw-bold"><i class="bi bi-chat-square-text me-2"></i>Registrar Cita</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="../ajax/avanzar_etapa3.php" method="POST">
+          <div class="modal-body">
+              <p class="text-muted small">Registra el resultado de la reunión con <b id="modalCitaNombre" class="text-dark"></b>.</p>
+              
+              <input type="hidden" name="id_cliente" id="modalCitaId">
+              
+              <div class="mb-3">
+                  <label class="form-label fw-bold">Observaciones / Resumen</label>
+                  <textarea class="form-control" name="observaciones" rows="3" required placeholder="Ej: El cliente mostró interés en el servicio premium. Debe consultarlo con su familia..."></textarea>
+              </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger fw-bold px-4">Confirmar Cita</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
+// Escucha del Modal 2 (Agendar)
 document.getElementById('modalAgendar').addEventListener('show.bs.modal', function (event) {
-    const button = event.relatedTarget; // Botón que abrió el modal
-    const id = button.getAttribute('data-id'); // Extrae el ID
-    const nombre = button.getAttribute('data-nombre'); // Extrae el Nombre
+    const button = event.relatedTarget; 
+    const id = button.getAttribute('data-id'); 
+    const nombre = button.getAttribute('data-nombre'); 
     
-    // Inyecta los valores dentro del formulario del modal
     document.getElementById('modalAgendarId').value = id;
     document.getElementById('modalAgendarNombre').textContent = nombre;
+});
+
+// Escucha del Modal 3 (Cita Realizada) - Ahora independiente
+document.getElementById('modalCita').addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget; 
+    const id = button.getAttribute('data-id'); 
+    const nombre = button.getAttribute('data-nombre'); 
+    
+    document.getElementById('modalCitaId').value = id;
+    document.getElementById('modalCitaNombre').textContent = nombre;
+});
+</script>
+
+<script>
+const inputHora = document.getElementById('inputHoraFormato');
+
+inputHora.addEventListener('input', function (e) {
+    if (e.inputType === 'deleteContentBackward') return;
+
+    let valor = e.target.value.replace(/\D/g, '');
+    
+    if (valor.length >= 2) {
+        e.target.value = valor.substring(0, 2) + ':' + valor.substring(2, 4);
+    } else {
+        e.target.value = valor;
+    }
 });
 </script>
 
