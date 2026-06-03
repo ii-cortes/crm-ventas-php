@@ -14,47 +14,36 @@ if (session_status() === PHP_SESSION_NONE) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body>
+<body class="bg-light">
 
-<div class="sub-header-bar py-2">
-    <div class="container d-flex justify-content-between align-items-center">
-        <div>
-            <i class="bi bi-clock-history me-2"></i> Módulo de Ventas e Inteligencia de Negocios
-        </div>
-        <div>
-            <i class="bi bi-telephone me-2"></i> Soporte Interno: +56 2 2222 3333
-        </div>
-    </div>
-</div>
-
-<nav class="navbar navbar-expand-lg navbar-custom navbar-dark shadow-sm">
-  <div class="container">
-    <a class="navbar-brand text-uppercase tracking-wider" href="#">Funeraria UDP</a>
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: #1a2a40;">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold tracking-wider" href="#">FUNERARIA UDP</a>
     
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-toggle="target" data-bs-target="#navbarNav">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
     
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
         <?php if (isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'admin'): ?>
-            <li class="nav-item"><a class="nav-link" href="../admin/dashboard.php">Inicio</a></li>
+            <li class="nav-item"><a class="nav-link" href="../admin/dashboard.php">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="../admin/catalogo.php">Catálogo</a></li>
             <li class="nav-item"><a class="nav-link" href="../admin/metas.php">Metas Corporativas</a></li>
         <?php elseif (isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'vendedor'): ?>
-            <li class="nav-item"><a class="nav-link active" href="../vendedor/dashboard.php">Inicio</a></li>
+            <li class="nav-item"><a class="nav-link" href="../vendedor/dashboard.php">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="../vendedor/embudo.php">Embudo (Secuencial)</a></li>
         <?php endif; ?>
       </ul>
       
       <div class="d-flex align-items-center text-white">
-          <span class="me-3 fs-6">
+          <span class="me-3">
               <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['usuario_nombre'] ?? 'Asesor'); ?>
           </span>
-          <a href="../logout.php" class="btn btn-sm btn-outline-light rounded-pill px-3">Salir</a>
+          <a href="../logout.php" class="btn btn-sm btn-outline-light">Salir</a>
       </div>
     </div>
   </div>
 </nav>
 
-<div class="container my-4">
+<div class="container-fluid my-4 px-4">
