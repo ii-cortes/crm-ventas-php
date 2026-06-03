@@ -4,21 +4,30 @@ if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'vendedor')
     header("Location: ../index.php");
     exit();
 }
+
+// 1. Incluimos la cabecera (Esto trae el menú y Bootstrap)
+include '../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard Vendedor</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container mt-5">
-    <div class="p-5 mb-4 bg-light rounded-3 shadow">
-        <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold">Bienvenido Vendedor: <?php echo $_SESSION['usuario_nombre']; ?></h1>
-            <p class="col-md-8 fs-4">Aquí veremos tus gráficos de rendimiento y embudo de ventas.</p>
-            <a href="../logout.php" class="btn btn-danger btn-lg">Cerrar Sesión</a>
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bold text-secondary">Mi Rendimiento</h2>
+        <p>Bienvenido a tu panel de control, <b><?php echo $_SESSION['usuario_nombre']; ?></b>.</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center border-primary">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Prospectos de Hoy</h5>
+                <h1 class="display-4 fw-bold">0</h1>
+            </div>
         </div>
     </div>
-</body>
-</html>
+</div>
+
+<?php
+// 3. Incluimos el pie de página
+include '../includes/footer.php';
+?>
