@@ -1,84 +1,78 @@
-/* assets/css/style.css */
+/* =========================================================
+   TEMA CORPORATIVO CRM FUNERARIA UDP
+   ========================================================= */
 
-/* Variables globales con la paleta exacta de tu mockup */
-:root {
-    --navy-dark: #111d30;       /* Azul marino profundo de la barra superior y footer */
-    --navy-medium: #1a2a40;     /* Azul de la barra de navegación */
-    --blue-gray: #5c6b83;       /* Gris azulado de los contenedores/tarjetas principales */
-    --bg-light: #f4f6f9;        /* Fondo claro general */
-    --teal-accent: #00bfa5;     /* Acento verde azulado para enlaces del footer */
-    --border-radius-custom: 12px; /* Redondeado pronunciado de los elementos de tu diseño */
-}
-
+/* 1. SOLUCIÓN AL FOOTER DESPOSICIONADO (Flexbox Sticky Footer) 
+   Esto fuerza a que el cuerpo ocupe el 100% de la pantalla y 
+   empuja el footer siempre hacia abajo, haya o no contenido. */
 body {
-    background-color: var(--bg-light);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.container.my-4 {
+    flex: 1; /* Toma todo el espacio disponible empujando el footer */
+}
+footer {
+    margin-top: auto; /* Se adhiere al fondo */
+    padding: 20px 0;
+    color: #ffffff !important;
 }
 
-/* Barra superior secundaria (Sub-header) */
-.sub-header-bar {
-    background-color: var(--navy-dark);
-    color: #ffffff;
-    font-size: 0.85rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+/* 2. COLOR HEADER Y FOOTER (#233662) */
+.navbar, footer {
+    background-color: #233662 !important;
 }
 
-/* Navbar principal */
-.navbar-custom {
-    background-color: var(--navy-medium);
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+/* 3. COLOR BOTONES PRINCIPALES (#384970) */
+.btn-primary {
+    background-color: #384970 !important;
+    border-color: #384970 !important;
+    color: #ffffff !important;
+}
+.btn-primary:hover {
+    background-color: #233662 !important; /* Se oscurece al pasar el mouse */
+    border-color: #233662 !important;
 }
 
-.navbar-custom .navbar-brand {
-    color: #ffffff;
-    font-weight: bold;
+/* 4. COLORES DE APOYO SOLICITADOS (#343e55, #626f8d, #aaaaaa) 
+   Aplicados en detalles sin alterar el fondo blanco de la página */
+.table-dark, thead.table-dark th {
+    background-color: #343e55 !important; /* Gris azulado oscuro para cabeceras de tablas */
+    border-color: #233662 !important;
+}
+.badge.bg-dark {
+    background-color: #626f8d !important; /* Tono intermedio para etiquetas */
+}
+.text-muted {
+    color: #aaaaaa !important; /* Gris claro sutil para textos secundarios */
 }
 
-.navbar-custom .nav-link {
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 500;
-    transition: color 0.2s ease;
+/* =========================================================
+   5. ETAPA 1: EMBÚDO DE VENTAS (Restaurado a Azul Brillante)
+   ========================================================= */
+/* Sobreescribimos la clase 'secondary' genérica para que vuelva a ser azul */
+.border-secondary {
+    border-color: #0d6efd !important; 
+}
+.bg-secondary {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+.badge.bg-secondary {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+h6.text-secondary {
+    color: #0d6efd !important; /* Título de la columna Etapa 1 */
 }
 
-.navbar-custom .nav-link:hover,
-.navbar-custom .nav-link.active {
-    color: #ffffff;
-    border-bottom: 2px solid #ffffff; /* Simula la pestaña subrayada de tu inicio */
+/* Botones de acción de la Etapa 1 */
+.btn-outline-secondary {
+    color: #0d6efd !important;
+    border-color: #0d6efd !important;
 }
-
-/* Contenedores de tu mockup (Bloques gris azulado con texto blanco) */
-.mockup-card {
-    background-color: var(--blue-gray);
-    color: #ffffff;
-    border: none;
-    border-radius: var(--border-radius-custom);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.mockup-card .card-title {
-    font-weight: 600;
-    font-size: 1.1rem;
-}
-
-/* Footer institucional oscuro */
-.footer-custom {
-    background-color: var(--navy-dark);
-    color: #ffffff;
-    margin-top: 5rem;
-}
-
-.footer-custom h5 {
-    font-weight: bold;
-    font-size: 1rem;
-    margin-bottom: 1rem;
-}
-
-.footer-custom a {
-    color: var(--teal-accent);
-    text-decoration: none;
-}
-
-.footer-custom a:hover {
-    text-decoration: underline;
+.btn-outline-secondary:hover {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
 }

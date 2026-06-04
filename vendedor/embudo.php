@@ -12,7 +12,7 @@ include '../includes/header.php';
 $id_vendedor = $_SESSION['usuario_id'];
 
 try {
-    // Consulta con LEFT JOIN para traer el nombre del producto vendido (Soft Delete compliance)
+    // Consulta con LEFT JOIN para traer el nombre del producto vendido
     $sqlClientes = "SELECT clientes.*, catalogo.nombre AS producto_nombre 
                     FROM clientes 
                     LEFT JOIN catalogo ON clientes.id_producto_venta = catalogo.id 
@@ -45,7 +45,7 @@ foreach ($clientes as $cliente) {
 
 <div class="d-flex justify-content-between align-items-center mb-4 text-dark">
     <h2 class="fw-bold"><i class="bi bi-funnel me-2"></i>Embudo de Ventas</h2>
-    <button type="button" class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProspecto">
+    <button type="button" class="btn text-white fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProspecto" style="background-color: #0d6efd !important; border-color: #0d6efd !important;">
         <i class="bi bi-plus-circle me-1"></i> Nuevo Prospecto
     </button>
 </div>
@@ -80,8 +80,9 @@ foreach ($clientes as $cliente) {
                             <p class="small text-muted mb-0"><i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($c['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                             <p class="small text-muted mb-0"><i class="bi bi-geo-alt me-1 text-danger"></i><?php echo htmlspecialchars($c['comuna'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                         </div>
-                        <button type="button" class="btn btn-sm btn-dark w-100 btn-agendar" data-bs-toggle="modal" data-bs-target="#modalAgendar"
-                                data-id="<?php echo $c['id']; ?>" data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                        <button type="button" class="btn btn-sm text-white w-100 btn-agendar" data-bs-toggle="modal" data-bs-target="#modalAgendar"
+                                data-id="<?php echo $c['id']; ?>" data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                style="background-color: #0d6efd !important; border-color: #0d6efd !important;">
                             Avanzar a Agendar <i class="bi bi-arrow-right"></i>
                         </button>
                     </div>
@@ -213,8 +214,8 @@ foreach ($clientes as $cliente) {
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-secondary fw-bold px-4">Guardar Prospecto</button>
+                    <button type="button" class="btn btn-light border text-dark" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn fw-bold px-4 text-white" style="background-color: #0d6efd !important; border-color: #0d6efd !important;">Guardar Prospecto</button>
                 </div>
             </form>
         </div>
@@ -386,8 +387,8 @@ foreach ($clientes as $cliente) {
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-secondary fw-bold px-4">Guardar Cambios</button>
+                    <button type="button" class="btn btn-light border text-dark" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn fw-bold px-4 text-white" style="background-color: #0d6efd !important; border-color: #0d6efd !important;">Guardar Cambios</button>
                 </div>
             </form>
         </div>

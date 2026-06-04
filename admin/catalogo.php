@@ -18,13 +18,7 @@ try {
 }
 ?>
 
-<div class="mb-4 border-bottom pb-3 mt-4">
-    <a href="index.php" class="btn btn-outline-secondary me-2"><i class="bi bi-speedometer2 me-1"></i> Dashboard Metas</a>
-    <a href="catalogo.php" class="btn btn-dark"><i class="bi bi-box-seam me-1"></i> Mantenedor de Catálogo</a>
-    <a href="../logout.php" class="btn btn-outline-danger float-end"><i class="bi bi-box-arrow-right me-1"></i> Salir</a>
-</div>
-
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 mt-4">
     <h2 class="fw-bold text-dark"><i class="bi bi-journal-text me-2"></i>Catálogo de Servicios</h2>
     <button type="button" class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProducto">
         <i class="bi bi-plus-lg me-1"></i> Añadir Producto
@@ -42,7 +36,7 @@ try {
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover align-middle">
-                <thead class="table-light">
+                <thead class="table-dark">
                     <tr>
                         <th>ID</th>
                         <th>Nombre / Descripción Breve</th>
@@ -63,7 +57,7 @@ try {
                             </small>
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark border px-2 py-1.5"><?php echo htmlspecialchars($p['tipo'] ?? 'General', ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span class="badge bg-dark text-white border px-2 py-1.5"><?php echo htmlspecialchars($p['tipo'] ?? 'General', ENT_QUOTES, 'UTF-8'); ?></span>
                         </td>
                         <td class="text-success fw-bold">$<?php echo number_format($p['precio'], 0, ',', '.'); ?></td>
                         <td>
@@ -145,7 +139,7 @@ try {
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-light border text-dark" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary fw-bold px-4">Guardar Producto</button>
                 </div>
             </form>
@@ -187,7 +181,7 @@ try {
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-light border text-dark" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-dark fw-bold px-4">Actualizar Producto</button>
                 </div>
             </form>

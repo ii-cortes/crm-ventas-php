@@ -1,24 +1,152 @@
 <?php
+// admin/dashboard.php
 session_start();
 if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'admin') {
     header("Location: ../index.php");
     exit();
 }
+
+require_once '../includes/db.php';
+include '../includes/header.php';
+
+try {
+    // Cargamos todos los registros verticales de TU tabla real 'metas_corporativas'
+    $stmt = $pdo->query("SELECT id, etapa, meta_diaria, min_amarillo, min_verde FROM metas_corporativas");
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Indexamos el arreglo por el número de etapa para pintarlo ordenadamente en el HTML
+    $metas = [];
+    foreach ($rows as $r) {
+        $metas[(int)$r['etapa']] = $r;
+    }
+    
+    // Fallback de seguridad: si la tabla está vacía en la BD, creamos la estructura en memoria
+    for ($i = 1; $i <= 4; $i++) {
+        if (!isset($metas[$i])) {
+            $metas[$i] = ['meta_diaria' => 10, 'min_amarillo' => 41, 'min_verde' => 80];
+        }
+    }
+} catch (PDOException $e) {
+    die("Error crítico al cargar las metas corporativas: " . $e->getMessage());
+}
+
+// Nombres amigables para la experiencia de usuario (UX) en el formulario
+$nombres_etapas = [
+    1 => '1. Prospectos (Etapa Inicial)',
+    2 => '2. Agendados (Citas Agendadas)',
+    3 => '3. Citas Realizadas (Perfilados)',
+    4 => '4. Ventas Cerradas (Contratos Ganados)'
+];
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container mt-5">
-    <div class="p-5 mb-4 bg-dark text-white rounded-3 shadow">
-        <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold">Bienvenido Administrador: <?php echo $_SESSION['usuario_nombre']; ?></h1>
-            <p class="col-md-8 fs-4">Aquí gestionaremos el catálogo y las metas corporativas.</p>
-            <a href="../logout.php" class="btn btn-warning btn-lg">Cerrar Sesión</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-sliders me-2"></i>Configuración de Metas Corporativas</h2>
+</div>
+<p class="text-muted small mb-4">Ajuste los valores de meta diaria y los umbrales mínimos del semáforo de rendimiento para cada etapa del embudo comercial de la funeraria.</p>
+
+<?php if (isset($_GET['success'])): ?>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>Estrategia corporativa de metas y semáforos actualizada con éxito.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<form action="../ajax/guardar_metas.php" method="POST">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 30%;">Etapa del Embudo</th>
+                            <th style="width: 15%;" class="text-center">Meta Diaria (Entero)</th>
+                            <th style="width: 15%;" class="text-center">Min. Amarillo (%)</th>
+                            <th style="width: 15%;" class="text-center">Min. Verde (%)</th>
+                            <th style="width: 25%;" class="text-center">Rangos del Semáforo Calculados</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php for ($i = 1; $i <= 4; $i++): ?>
+                        <tr class="fila-meta" data-etapa="<?php echo $i; ?>">
+                            <td class="fw-bold text-secondary fs-6">
+                                <?php echo $nombres_etapas[$i]; ?>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control text-center fw-bold fs-5 input-meta-diaria" 
+                                       name="meta_diaria_<?php echo $i; ?>" min="1" step="1" required 
+                                       value="<?php echo htmlspecialchars($metas[$i]['meta_diaria']); ?>">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control text-center fw-bold fs-5 input-amarillo" 
+                                       name="min_amarillo_<?php echo $i; ?>" min="1" max="98" required 
+                                       value="<?php echo htmlspecialchars($metas[$i]['min_amarillo']); ?>">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control text-center fw-bold fs-5 input-verde" 
+                                       name="min_verde_<?php echo $i; ?>" min="2" max="100" required 
+                                       value="<?php echo htmlspecialchars($metas[$i]['min_verde']); ?>">
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-1 small text-center fw-bold px-2">
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger txt-rango-rojo">Rojo: 0% - --%</span>
+                                    <span class="badge bg-warning bg-opacity-10 text-dark border border-warning txt-rango-amarillo">Amarillo: --% - --%</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success txt-rango-verde">Verde: --%+</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endfor; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</body>
-</html>
+
+    <div class="text-end mt-4">
+        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm px-5">
+            <i class="bi bi-save me-2"></i>Guardar Parámetros Corporativos
+        </button>
+    </div>
+</form>
+
+<?php include '../includes/footer.php'; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    function recalcularFila(fila) {
+        const inputAmarillo = fila.querySelector('.input-amarillo');
+        const inputVerde = fila.querySelector('.input-verde');
+        
+        const txtRangoRojo = fila.querySelector('.txt-rango-rojo');
+        const txtRangoAmarillo = fila.querySelector('.txt-rango-amarillo');
+        const txtRangoVerde = fila.querySelector('.txt-rango-verde');
+
+        let minAmarillo = parseInt(inputAmarillo.value) || 0;
+        let minVerde = parseInt(inputVerde.value) || 0;
+
+        if (minAmarillo >= minVerde) {
+            minVerde = minAmarillo + 1;
+            inputVerde.value = minVerde;
+        }
+
+        inputVerde.min = minAmarillo + 1;
+
+        let maxRojo = minAmarillo - 1;
+        let maxAmarillo = minVerde - 1;
+
+        txtRangoRojo.innerText = `Rojo: 0% a ${maxRojo}%`;
+        txtRangoAmarillo.innerText = `Amarillo: ${minAmarillo}% a ${maxAmarillo}%`;
+        txtRangoVerde.innerText = `Verde: ${minVerde}% o más`;
+    }
+
+    document.querySelectorAll('.fila-meta').forEach(fila => {
+        const inputAmarillo = fila.querySelector('.input-amarillo');
+        const inputVerde = fila.querySelector('.input-verde');
+
+        inputAmarillo.addEventListener('input', () => recalcularFila(fila));
+        inputVerde.addEventListener('input', () => recalcularFila(fila));
+
+        recalcularFila(fila);
+    });
+});
+</script>
