@@ -12,12 +12,18 @@ include '../includes/header.php';
 $id_vendedor = $_SESSION['usuario_id'];
 
 try {
-    // Cargar los clientes de este vendedor
-    $stmt = $pdo->prepare("SELECT * FROM clientes WHERE id_vendedor = :id_vendedor ORDER BY id DESC");
+    // Consulta con LEFT JOIN para traer el nombre del producto vendido (Soft Delete compliance)
+    $sqlClientes = "SELECT clientes.*, catalogo.nombre AS producto_nombre 
+                    FROM clientes 
+                    LEFT JOIN catalogo ON clientes.id_producto_venta = catalogo.id 
+                    WHERE clientes.id_vendedor = :id_vendedor 
+                    ORDER BY clientes.id DESC";
+                    
+    $stmt = $pdo->prepare($sqlClientes);
     $stmt->execute([':id_vendedor' => $id_vendedor]);
     $clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Cargar el catálogo de productos disponibles para la Etapa 4
+    // El vendedor solo ve productos ACTIVOS (estado = 1) para nuevas ventas
     $stmtCat = $pdo->query("SELECT * FROM catalogo WHERE estado = 1");
     $productos = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
 
@@ -37,7 +43,7 @@ foreach ($clientes as $cliente) {
 }
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 text-dark">
     <h2 class="fw-bold"><i class="bi bi-funnel me-2"></i>Embudo de Ventas</h2>
     <button type="button" class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProspecto">
         <i class="bi bi-plus-circle me-1"></i> Nuevo Prospecto
@@ -166,7 +172,10 @@ foreach ($clientes as $cliente) {
                             <p class="small text-muted mb-0"><i class="bi bi-person-badge me-1 text-danger"></i>RUT: <?php echo htmlspecialchars($c['rut'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                             <p class="small text-muted mb-0"><i class="bi bi-cake2 me-1 text-dark"></i>F. Nac: <?php echo htmlspecialchars($c['fecha_nacimiento'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                             <p class="small text-muted mb-0"><i class="bi bi-gender-ambiguous me-1 text-dark"></i>Género: <?php echo htmlspecialchars($c['genero'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
-                            <p class="small text-success fw-bold mt-2 mb-0"><i class="bi bi-cash me-1"></i>Precio: $<?php echo number_format($c['precio_venta'] ?? 0, 0, ',', '.'); ?></p>
+                            
+                            <hr class="my-1 text-muted opacity-25">
+                            <p class="small text-dark mb-0"><i class="bi bi-box-seam me-1 text-primary"></i><b>Servicio:</b> <?php echo htmlspecialchars($c['producto_nombre'] ?? 'Desconocido', ENT_QUOTES, 'UTF-8'); ?></p>
+                            <p class="small text-success fw-bold mb-0"><i class="bi bi-cash me-1"></i><b>Monto:</b> $<?php echo number_format($c['precio_venta'] ?? 0, 0, ',', '.'); ?></p>
                         </div>
                         
                         <?php if(!empty($c['documento_venta'])): ?>
@@ -256,9 +265,7 @@ foreach ($clientes as $cliente) {
             </div>
             <form action="../ajax/avanzar_etapa3.php" method="POST">
                 <div class="modal-body">
-                    
                     <p class="text-muted small">Registrando perfil de: <b id="modalCitaNombre" class="text-dark"></b></p>
-                    
                     <input type="hidden" name="id_cliente" id="modalCitaId">
                     <div class="mb-3">
                         <label class="form-label fw-bold">RUT</label>
@@ -277,7 +284,10 @@ foreach ($clientes as $cliente) {
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">F. Nacimiento</label>
-                            <input type="date" class="form-control" name="fecha_nacimiento" required max="<?php echo date('Y-m-d'); ?>">
+                            <input type="date" class="form-control" name="fecha_nacimiento" required 
+                                   min="1900-01-01" 
+                                   max="<?php echo date('Y-m-d', strtotime('-18 years')); ?>" 
+                                   title="El cliente debe ser mayor de edad">
                         </div>
                     </div>
                 </div>
@@ -445,7 +455,10 @@ foreach ($clientes as $cliente) {
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Corregir F. Nacimiento</label>
-                            <input type="date" class="form-control" name="fecha_nacimiento" id="editPerfiladoNacimiento" required max="<?php echo date('Y-m-d'); ?>">
+                            <input type="date" class="form-control" name="fecha_nacimiento" id="editPerfiladoNacimiento" required 
+                                   min="1900-01-01" 
+                                   max="<?php echo date('Y-m-d', strtotime('-18 years')); ?>"
+                                   title="El cliente debe ser mayor de edad">
                         </div>
                     </div>
                 </div>
@@ -462,8 +475,6 @@ foreach ($clientes as $cliente) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // 1. ASIGNACIÓN DE DATOS A LOS MODALES
     try {
         document.querySelectorAll('.btn-agendar').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -472,11 +483,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // ================= AQUÍ ESTÁ LA CORRECCIÓN SOLICITADA EN JAVASCRIPT =================
         document.querySelectorAll('.btn-cita').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.getElementById('modalCitaId').value = this.getAttribute('data-id');
-                // NUEVO: Pasa el nombre de la tarjeta al texto del modal
                 document.getElementById('modalCitaNombre').innerText = this.getAttribute('data-nombre');
             });
         });
@@ -520,8 +529,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Error al enlazar los modales: ", error);
     }
 
-    // 2. VALIDACIONES EN TIEMPO REAL (Bloqueos preventivos de teclado)
-    
     document.querySelectorAll('.input-telefono').forEach(input => {
         input.addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');

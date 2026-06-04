@@ -10,15 +10,16 @@ require_once '../includes/db.php';
 include '../includes/header.php';
 
 try {
-    $stmt = $pdo->query("SELECT * FROM catalogo ORDER BY id DESC");
+    // Forzamos el nombre de la columna con un ALIAS (estado_prod) para evitar conflictos de mayúsculas/minúsculas
+    $stmt = $pdo->query("SELECT id, nombre, precio, tipo, descripcion_corta, descripcion_larga, estado AS estado_prod FROM catalogo ORDER BY id DESC");
     $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die("Error al cargar el catálogo: " . $e->getMessage());
 }
 ?>
 
-<div class="mb-4 border-bottom pb-3">
-    <a href="dashboard.php" class="btn btn-outline-secondary me-2"><i class="bi bi-speedometer2 me-1"></i> Dashboard Metas</a>
+<div class="mb-4 border-bottom pb-3 mt-4">
+    <a href="index.php" class="btn btn-outline-secondary me-2"><i class="bi bi-speedometer2 me-1"></i> Dashboard Metas</a>
     <a href="catalogo.php" class="btn btn-dark"><i class="bi bi-box-seam me-1"></i> Mantenedor de Catálogo</a>
     <a href="../logout.php" class="btn btn-outline-danger float-end"><i class="bi bi-box-arrow-right me-1"></i> Salir</a>
 </div>
@@ -44,7 +45,8 @@ try {
                 <thead class="table-light">
                     <tr>
                         <th>ID</th>
-                        <th>Nombre del Producto / Servicio</th>
+                        <th>Nombre / Descripción Breve</th>
+                        <th>Categoría (Tipo)</th>
                         <th>Precio (CLP)</th>
                         <th>Estado</th>
                         <th class="text-center">Acciones</th>
@@ -54,10 +56,18 @@ try {
                     <?php foreach ($productos as $p): ?>
                     <tr>
                         <td class="text-muted fw-bold">#<?php echo $p['id']; ?></td>
-                        <td class="fw-bold"><?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td>
+                            <div class="fw-bold text-dark"><?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?></div>
+                            <small class="text-muted d-block text-truncate" style="max-width: 300px;" title="<?php echo htmlspecialchars($p['descripcion_larga'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                <?php echo htmlspecialchars($p['descripcion_corta'] ?? 'Sin descripción breve', ENT_QUOTES, 'UTF-8'); ?>
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border px-2 py-1.5"><?php echo htmlspecialchars($p['tipo'] ?? 'General', ENT_QUOTES, 'UTF-8'); ?></span>
+                        </td>
                         <td class="text-success fw-bold">$<?php echo number_format($p['precio'], 0, ',', '.'); ?></td>
                         <td>
-                            <?php if ($p['estado'] == 1): ?>
+                            <?php if ($p['estado_prod'] == 1): ?>
                                 <span class="badge bg-success">Activo</span>
                             <?php else: ?>
                                 <span class="badge bg-danger">Inactivo</span>
@@ -68,16 +78,19 @@ try {
                                     data-bs-toggle="modal" data-bs-target="#modalEditarProducto"
                                     data-id="<?php echo $p['id']; ?>"
                                     data-nombre="<?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?>"
-                                    data-precio="<?php echo $p['precio']; ?>" title="Editar">
+                                    data-precio="<?php echo $p['precio']; ?>" 
+                                    data-tipo="<?php echo htmlspecialchars($p['tipo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-desccorta="<?php echo htmlspecialchars($p['descripcion_corta'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-desclarga="<?php echo htmlspecialchars($p['descripcion_larga'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    title="Editar">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
                             
                             <form action="../ajax/estado_producto.php" method="POST" class="d-inline">
                                 <input type="hidden" name="id_producto" value="<?php echo $p['id']; ?>">
-                                <input type="hidden" name="estado_actual" value="<?php echo $p['estado']; ?>">
-                                
-                                <?php if ($p['estado'] == 1): ?>
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar">
+                                <input type="hidden" name="estado_actual" value="<?php echo $p['estado_prod']; ?>">
+                                <?php if ($p['estado_prod'] == 1): ?>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar" onclick="return confirm('¿Ocultar este producto del catálogo de ventas?');">
                                         <i class="bi bi-eye-slash"></i>
                                     </button>
                                 <?php else: ?>
@@ -90,7 +103,7 @@ try {
                     </tr>
                     <?php endforeach; ?>
                     <?php if(empty($productos)): ?>
-                        <tr><td colspan="5" class="text-center text-muted py-4">No hay productos en el catálogo.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-4">No hay productos en el catálogo.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -99,7 +112,7 @@ try {
 </div>
 
 <div class="modal fade" id="modalNuevoProducto" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title fw-bold"><i class="bi bi-box-seam me-2"></i>Añadir Nuevo Producto</h5>
@@ -107,14 +120,28 @@ try {
             </div>
             <form action="../ajax/guardar_producto.php" method="POST">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nombre del Servicio</label>
-                        <input type="text" class="form-control" name="nombre" required maxlength="100">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label fw-bold">Nombre del Servicio</label>
+                            <input type="text" class="form-control" name="nombre" required maxlength="100" placeholder="Ej: Urna Premium Madera">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Categoría (Tipo)</label>
+                            <input type="text" class="form-control" name="tipo" required maxlength="50" placeholder="Ej: Cremación">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Precio de Venta (CLP)</label>
-                        <input type="text" class="form-control input-precio" name="precio" required>
+                        <input type="text" class="form-control input-precio" name="precio" required placeholder="Ej: 1500000">
                         <div class="form-text">Ingrese solo números, sin puntos ni signos.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción Breve (Máx. 255 caracteres)</label>
+                        <input type="text" class="form-control" name="descripcion_corta" required maxlength="255" placeholder="Resumen rápido de lo que incluye el servicio">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción Detallada / Larga</label>
+                        <textarea class="form-control" name="descripcion_larga" rows="4" placeholder="Escriba el desglose completo del servicio funerario..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -127,7 +154,7 @@ try {
 </div>
 
 <div class="modal fade" id="modalEditarProducto" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Producto</h5>
@@ -136,14 +163,27 @@ try {
             <form action="../ajax/editar_producto.php" method="POST">
                 <div class="modal-body">
                     <input type="hidden" name="id_producto" id="editProdId">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nombre del Servicio</label>
-                        <input type="text" class="form-control" name="nombre" id="editProdNombre" required maxlength="100">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label fw-bold">Nombre del Servicio</label>
+                            <input type="text" class="form-control" name="nombre" id="editProdNombre" required maxlength="100">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Categoría (Tipo)</label>
+                            <input type="text" class="form-control" name="tipo" id="editProdTipo" required maxlength="50">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Precio de Venta (CLP)</label>
                         <input type="text" class="form-control input-precio" name="precio" id="editProdPrecio" required>
-                        <div class="form-text">Ingrese solo números, sin puntos ni signos.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción Breve</label>
+                        <input type="text" class="form-control" name="descripcion_corta" id="editProdDescCorta" required maxlength="255">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción Detallada</label>
+                        <textarea class="form-control" name="descripcion_larga" id="editProdDescLarga" rows="4"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -159,14 +199,20 @@ try {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // Mapeo dinámico completo de todos los atributos al abrir la edición
     document.querySelectorAll('.btn-editar-prod').forEach(btn => {
         btn.addEventListener('click', function() {
             document.getElementById('editProdId').value = this.getAttribute('data-id');
             document.getElementById('editProdNombre').value = this.getAttribute('data-nombre');
             document.getElementById('editProdPrecio').value = Math.round(this.getAttribute('data-precio'));
+            document.getElementById('editProdTipo').value = this.getAttribute('data-tipo');
+            document.getElementById('editProdDescCorta').value = this.getAttribute('data-desccorta');
+            document.getElementById('editProdDescLarga').value = this.getAttribute('data-desclarga');
         });
     });
 
+    // Poka-Yoke de teclado para precios
     document.querySelectorAll('.input-precio').forEach(input => {
         input.addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
