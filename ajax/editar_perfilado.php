@@ -1,32 +1,26 @@
 <?php
-// ajax/avanzar_etapa3.php
+// ajax/editar_perfilado.php
 session_start();
 require_once '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'vendedor') {
     
-    // Captura de datos
     $id_cliente = $_POST['id_cliente'];
     $id_vendedor = $_SESSION['usuario_id'];
     
-    // Captura de los datos duros (Perfilado Progresivo exigido)
     $rut = trim($_POST['rut']);
     $genero = $_POST['genero'];
     $fecha_nacimiento = $_POST['fecha_nacimiento'];
-    
+
     try {
-        // Actualizamos la base de datos SOLO con los campos requeridos en esta etapa
+        // Actualizamos SOLAMENTE los datos de la Etapa 3
         $sql = "UPDATE clientes 
                 SET rut = :rut, 
                     genero = :genero, 
-                    fecha_nacimiento = :fecha_nacimiento, 
-                    etapa_actual = '3' 
-                WHERE id = :id_cliente 
-                  AND id_vendedor = :id_vendedor 
-                  AND etapa_actual = '2'"; 
+                    fecha_nacimiento = :fecha_nacimiento 
+                WHERE id = :id_cliente AND id_vendedor = :id_vendedor AND etapa_actual = '3'";
         
         $stmt = $pdo->prepare($sql);
-        
         $stmt->execute([
             ':rut' => $rut,
             ':genero' => $genero,
@@ -35,11 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
             ':id_vendedor' => $id_vendedor
         ]);
 
-        header("Location: ../vendedor/embudo.php?success=etapa3");
+        header("Location: ../vendedor/embudo.php?success=perfilado_editado");
         exit();
 
     } catch (PDOException $e) {
-        die("Error al actualizar a la etapa 3: " . $e->getMessage());
+        die("Error al corregir el perfilado: " . $e->getMessage());
     }
 } else {
     header("Location: ../index.php");
