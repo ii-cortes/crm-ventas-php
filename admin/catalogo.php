@@ -1,7 +1,6 @@
 <?php
 // admin/catalogo.php
 session_start();
-// Control de Acceso: Solo el Administrador puede entrar aquí
 if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'admin') {
     header("Location: ../index.php");
     exit();
@@ -11,7 +10,6 @@ require_once '../includes/db.php';
 include '../includes/header.php';
 
 try {
-    // Obtenemos todos los productos, ordenados por los más recientes
     $stmt = $pdo->query("SELECT * FROM catalogo ORDER BY id DESC");
     $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -20,9 +18,9 @@ try {
 ?>
 
 <div class="mb-4 border-bottom pb-3">
-    <a href="index.php" class="btn btn-outline-secondary me-2"><i class="bi bi-speedometer2 me-1"></i> Dashboard Metas</a>
+    <a href="dashboard.php" class="btn btn-outline-secondary me-2"><i class="bi bi-speedometer2 me-1"></i> Dashboard Metas</a>
     <a href="catalogo.php" class="btn btn-dark"><i class="bi bi-box-seam me-1"></i> Mantenedor de Catálogo</a>
-    <a href="../ajax/logout.php" class="btn btn-outline-danger float-end"><i class="bi bi-box-arrow-right me-1"></i> Salir</a>
+    <a href="../logout.php" class="btn btn-outline-danger float-end"><i class="bi bi-box-arrow-right me-1"></i> Salir</a>
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -77,8 +75,9 @@ try {
                             <form action="../ajax/estado_producto.php" method="POST" class="d-inline">
                                 <input type="hidden" name="id_producto" value="<?php echo $p['id']; ?>">
                                 <input type="hidden" name="estado_actual" value="<?php echo $p['estado']; ?>">
+                                
                                 <?php if ($p['estado'] == 1): ?>
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar" onclick="return confirm('¿Ocultar este producto del catálogo de ventas?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar">
                                         <i class="bi bi-eye-slash"></i>
                                     </button>
                                 <?php else: ?>
@@ -110,11 +109,11 @@ try {
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nombre del Servicio</label>
-                        <input type="text" class="form-control" name="nombre" required maxlength="100" placeholder="Ej: Urna Premium Madera">
+                        <input type="text" class="form-control" name="nombre" required maxlength="100">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Precio de Venta (CLP)</label>
-                        <input type="text" class="form-control input-precio" name="precio" required placeholder="Ej: 1500000">
+                        <input type="text" class="form-control input-precio" name="precio" required>
                         <div class="form-text">Ingrese solo números, sin puntos ni signos.</div>
                     </div>
                 </div>
@@ -160,8 +159,6 @@ try {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // Asignación de datos al modal de edición
     document.querySelectorAll('.btn-editar-prod').forEach(btn => {
         btn.addEventListener('click', function() {
             document.getElementById('editProdId').value = this.getAttribute('data-id');
@@ -170,7 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Poka-Yoke: Forzar solo el ingreso de números en el campo de precio
     document.querySelectorAll('.input-precio').forEach(input => {
         input.addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');

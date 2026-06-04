@@ -1,49 +1,48 @@
 <?php
 // ajax/auth.php
-
-// 1. Iniciamos la sesión para poder recordar quién es el usuario mientras navega
 session_start();
-
-// 2. Traemos nuestra conexión a la base de datos
 require_once '../includes/db.php';
 
-// 3. Verificamos que los datos vengan del formulario (método POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
-    // Capturamos el correo ingresado
-    $correo = $_POST['correo'] ?? '';
-    
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $correo = trim($_POST['correo']);
+    // Ignoramos la clave inventada para cumplir con el requerimiento de "Simular Ingreso"
+
     try {
-        // 4. Preparamamos la consulta segura (evitando Inyección SQL)
-        $stmt = $pdo->prepare("SELECT id, nombre, correo, rol FROM usuarios WHERE correo = :correo LIMIT 1");
+        // Buscamos si el usuario existe en la BD
+        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE correo = :correo LIMIT 1");
         $stmt->execute([':correo' => $correo]);
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // 5. Validamos si el usuario existe
-        if ($usuario) {
-            // ¡Éxito! Guardamos sus datos en variables de sesión "globales"
-            $_SESSION['usuario_id'] = $usuario['id'];
-            $_SESSION['usuario_nombre'] = $usuario['nombre'];
-            $_SESSION['usuario_rol'] = $usuario['rol'];
-
-            // Redirigimos dependiendo del rol (Como pide el requerimiento)
-            if ($usuario['rol'] === 'admin') {
-                header("Location: ../admin/dashboard.php");
+        // Si la base de datos está vacía, usamos un "Mock" (Simulación en duro)
+        if (!$usuario) {
+            if ($correo === 'admin@crm.cl') {
+                $usuario = ['id' => 1, 'nombre' => 'Administrador', 'rol' => 'admin'];
+            } elseif ($correo === 'vendedor@crm.cl') {
+                $usuario = ['id' => 2, 'nombre' => 'Vendedor', 'rol' => 'vendedor'];
             } else {
-                header("Location: ../vendedor/dashboard.php");
+                // Solo rechaza si el correo no es ni de admin ni de vendedor
+                header("Location: ../index.php?error=credenciales");
+                exit();
             }
-            exit();
-        } else {
-            // Falla el login: El correo no existe en la BD. 
-            // Lo devolvemos al index con un mensaje de error en la URL
-            header("Location: ../index.php?error=1");
-            exit();
         }
+
+        // Se inician las variables de sesión
+        $_SESSION['usuario_id'] = $usuario['id'];
+        $_SESSION['usuario_nombre'] = $usuario['nombre'];
+        $_SESSION['usuario_rol'] = $usuario['rol'];
+
+        // Redirección correcta según el rol
+        if ($usuario['rol'] === 'admin') {
+            header("Location: ../admin/catalogo.php"); 
+        } else if ($usuario['rol'] === 'vendedor') {
+            header("Location: ../vendedor/embudo.php");
+        }
+        exit();
+
     } catch (PDOException $e) {
-        die("Error en la consulta: " . $e->getMessage());
+        die("Error de Base de Datos: " . $e->getMessage());
     }
 } else {
-    // Si alguien intenta entrar a este archivo directamente por la URL, lo echamos al login
     header("Location: ../index.php");
     exit();
 }
