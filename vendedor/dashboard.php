@@ -12,7 +12,7 @@ include '../includes/header.php';
 $id_vendedor = $_SESSION['usuario_id'];
 
 try {
-    // 1. OBTENER LAS METAS CORPORATIVAS (CON EL DICCIONARIO INVERSO DEL ENUM)
+    // 1. OBTENER LAS METAS CORPORATIVAS DESDE LA BD
     $stmtMetas = $pdo->query("SELECT etapa, meta_diaria, min_amarillo, min_verde FROM metas_corporativas");
     $rowsMetas = $stmtMetas->fetchAll(PDO::FETCH_ASSOC);
     
@@ -31,7 +31,7 @@ try {
         }
     }
     
-    // Fallback por si la base de datos no trae alguna etapa
+    // Fallback preventivo de seguridad
     for ($i = 1; $i <= 4; $i++) {
         if (!isset($metas[$i])) {
             $metas[$i] = ['meta_diaria' => 10, 'min_amarillo' => 41, 'min_verde' => 80];
@@ -78,49 +78,54 @@ $iconos_etapas = [
         $meta = (int)$metas[$i]['meta_diaria'];
         $logro = (int)$logros[$i];
         
-        // Evitamos división por cero
+        // Evitamos división por cero al calcular el avance real
         $porcentaje = $meta > 0 ? round(($logro / $meta) * 100) : 0;
         
         $min_amarillo = (int)$metas[$i]['min_amarillo'];
         $min_verde = (int)$metas[$i]['min_verde'];
 
-        // LÓGICA MATEMÁTICA DEL SEMÁFORO
+        // LÓGICA MATEMÁTICA DEL SEMÁFORO DE RENDIMIENTO
+        // Restauramos los fondos de colores suaves (bg-opacity-10) que pediste mantener
         if ($porcentaje >= $min_verde) {
             $color_clase = 'success';
+            $bg_clase = 'bg-success bg-opacity-10';
             $texto_estado = '¡Meta Superada!';
             $icono_semaforo = 'bi-check-circle-fill';
         } elseif ($porcentaje >= $min_amarillo) {
             $color_clase = 'warning';
+            $bg_clase = 'bg-warning bg-opacity-10';
             $texto_estado = 'En Progreso';
             $icono_semaforo = 'bi-exclamation-triangle-fill';
         } else {
             $color_clase = 'danger';
+            $bg_clase = 'bg-danger bg-opacity-10';
             $texto_estado = 'Rendimiento Bajo';
             $icono_semaforo = 'bi-x-circle-fill';
         }
         
-        // Si superan el 100%, la barra visual se topa en 100 para no romper el diseño CSS
         $porcentaje_barra = $porcentaje > 100 ? 100 : $porcentaje;
+        $texto_badge = $color_clase === 'warning' ? 'text-dark' : 'text-white';
     ?>
     <div class="col-md-6 col-lg-3">
-        <div class="card shadow-sm border-0 border-bottom border-4 border-<?php echo $color_clase; ?> h-100" style="background-color: #626f8d;">
-            <div class="card-body">
+        <div class="card shadow-sm border-0 border-bottom border-4 border-<?php echo $color_clase; ?> <?php echo $bg_clase; ?> h-100">
+            <div class="card-body d-flex flex-column">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold text-white text-uppercase mb-0">Etapa <?php echo $i; ?></h6>
-                    <i class="bi <?php echo $iconos_etapas[$i]; ?> fs-4 text-white opacity-75"></i>
+                    <h6 class="fw-bold text-muted text-uppercase mb-0">Etapa <?php echo $i; ?></h6>
+                    <i class="bi <?php echo $iconos_etapas[$i]; ?> fs-4 text-muted opacity-75"></i>
                 </div>
                 
-                <h5 class="fw-bold text-white mb-1"><?php echo $nombres_etapas[$i]; ?></h5>
-                <h2 class="display-5 fw-bold text-<?php echo $color_clase; ?> mb-3">
-                    <?php echo $logro; ?> <span class="fs-6 text-white opacity-50 fw-normal">/ <?php echo $meta; ?> meta</span>
+                <h5 class="fw-bold text-dark mb-1"><?php echo $nombres_etapas[$i]; ?></h5>
+                
+                <h2 class="display-5 fw-bold text-dark mb-3">
+                    <?php echo $logro; ?> <span class="fs-6 text-muted fw-normal">/ <?php echo $meta; ?> meta</span>
                 </h2>
 
-                <div class="d-flex justify-content-between text-white small fw-bold mb-1">
+                <div class="d-flex justify-content-between text-dark small fw-bold mb-1">
                     <span>Avance</span>
                     <span><?php echo $porcentaje; ?>%</span>
                 </div>
                 
-                <div class="progress mb-3" style="height: 10px; background-color: #343e55;">
+                <div class="progress mb-3" style="height: 10px; background-color: rgba(0,0,0,0.08);">
                     <div class="progress-bar bg-<?php echo $color_clase; ?> progress-bar-striped progress-bar-animated" 
                          role="progressbar" 
                          style="width: <?php echo $porcentaje_barra; ?>%;">
@@ -128,10 +133,10 @@ $iconos_etapas = [
                 </div>
 
                 <div class="text-center mt-auto">
-                    <span class="badge bg-<?php echo $color_clase; ?> bg-opacity-25 text-white w-100 py-2 border border-<?php echo $color_clase; ?>">
+                    <span class="badge bg-<?php echo $color_clase; ?> <?php echo $texto_badge; ?> w-100 py-2 border border-<?php echo $color_clase; ?>">
                         <i class="bi <?php echo $icono_semaforo; ?> me-1"></i><?php echo $texto_estado; ?>
                     </span>
-                    <div class="mt-2 text-white small opacity-50" style="font-size: 0.7rem;">
+                    <div class="mt-2 text-muted small fw-semibold" style="font-size: 0.75rem;">
                         [Amarillo: <?php echo $min_amarillo; ?>% | Verde: <?php echo $min_verde; ?>%]
                     </div>
                 </div>
@@ -139,14 +144,6 @@ $iconos_etapas = [
         </div>
     </div>
     <?php endfor; ?>
-</div>
-
-<div class="alert bg-dark text-white border-0 shadow-sm d-flex align-items-center p-4 rounded-3" style="background-color: #343e55 !important;">
-    <i class="bi bi-lightbulb text-warning display-4 me-4"></i>
-    <div>
-        <h5 class="fw-bold mb-1">Consejo de Ingeniería de Ventas</h5>
-        <p class="mb-0 text-light opacity-75">Las metas están definidas por la corporación y se actualizan en tiempo real. Un semáforo en <span class="text-danger fw-bold">rojo</span> no significa fracaso, sino una oportunidad para redirigir tu esfuerzo hacia esa etapa del embudo. ¡Concéntrate en avanzar tus prospectos a la zona <span class="text-success fw-bold">verde</span>!</p>
-    </div>
 </div>
 
 <?php include '../includes/footer.php'; ?>
