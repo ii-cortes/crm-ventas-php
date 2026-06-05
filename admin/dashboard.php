@@ -10,17 +10,27 @@ require_once '../includes/db.php';
 include '../includes/header.php';
 
 try {
-    // Cargamos todos los registros verticales de TU tabla real 'metas_corporativas'
+    // Cargamos los datos de la base de datos (que vienen como 'prospectos', 'agendas', etc.)
     $stmt = $pdo->query("SELECT id, etapa, meta_diaria, min_amarillo, min_verde FROM metas_corporativas");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Indexamos el arreglo por el número de etapa para pintarlo ordenadamente en el HTML
+    // DICCIONARIO INVERSO: Convierte la palabra del ENUM a números (1,2,3,4) para el HTML
+    $diccionario_inverso = [
+        'prospectos' => 1,
+        'agendas' => 2,
+        'citas' => 3,
+        'ventas' => 4
+    ];
+
     $metas = [];
     foreach ($rows as $r) {
-        $metas[(int)$r['etapa']] = $r;
+        if (isset($diccionario_inverso[$r['etapa']])) {
+            $indice = $diccionario_inverso[$r['etapa']];
+            $metas[$indice] = $r;
+        }
     }
     
-    // Fallback de seguridad: si la tabla está vacía en la BD, creamos la estructura en memoria
+    // Fallback de seguridad: por si faltan datos
     for ($i = 1; $i <= 4; $i++) {
         if (!isset($metas[$i])) {
             $metas[$i] = ['meta_diaria' => 10, 'min_amarillo' => 41, 'min_verde' => 80];
@@ -30,7 +40,6 @@ try {
     die("Error crítico al cargar las metas corporativas: " . $e->getMessage());
 }
 
-// Nombres amigables para la experiencia de usuario (UX) en el formulario
 $nombres_etapas = [
     1 => '1. Prospectos (Etapa Inicial)',
     2 => '2. Agendados (Citas Agendadas)',
@@ -112,11 +121,9 @@ $nombres_etapas = [
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    
     function recalcularFila(fila) {
         const inputAmarillo = fila.querySelector('.input-amarillo');
         const inputVerde = fila.querySelector('.input-verde');
-        
         const txtRangoRojo = fila.querySelector('.txt-rango-rojo');
         const txtRangoAmarillo = fila.querySelector('.txt-rango-amarillo');
         const txtRangoVerde = fila.querySelector('.txt-rango-verde');
@@ -128,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
             minVerde = minAmarillo + 1;
             inputVerde.value = minVerde;
         }
-
         inputVerde.min = minAmarillo + 1;
 
         let maxRojo = minAmarillo - 1;
@@ -142,10 +148,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.fila-meta').forEach(fila => {
         const inputAmarillo = fila.querySelector('.input-amarillo');
         const inputVerde = fila.querySelector('.input-verde');
-
         inputAmarillo.addEventListener('input', () => recalcularFila(fila));
         inputVerde.addEventListener('input', () => recalcularFila(fila));
-
         recalcularFila(fila);
     });
 });

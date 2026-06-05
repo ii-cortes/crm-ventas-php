@@ -1,4 +1,5 @@
 <?php
+// vendedor/dashboard.php
 session_start();
 if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'vendedor') {
     header("Location: ../index.php");
@@ -10,122 +11,141 @@ include '../includes/header.php';
 
 $id_vendedor = $_SESSION['usuario_id'];
 
-// 1. Consultamos la base de datos para contar cuántos clientes hay en cada etapa para ESTE vendedor
 try {
-    $stmt = $pdo->prepare("SELECT etapa_actual, COUNT(*) as total FROM clientes WHERE id_vendedor = :id_vendedor GROUP BY etapa_actual");
-    $stmt->execute([':id_vendedor' => $id_vendedor]);
-    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // 1. OBTENER LAS METAS CORPORATIVAS (CON EL DICCIONARIO INVERSO DEL ENUM)
+    $stmtMetas = $pdo->query("SELECT etapa, meta_diaria, min_amarillo, min_verde FROM metas_corporativas");
+    $rowsMetas = $stmtMetas->fetchAll(PDO::FETCH_ASSOC);
     
-    // Inicializamos contadores en 0
-    $clientes_por_etapa = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
-    
-    // Poblamos el arreglo con los datos reales de la BD
-    foreach ($resultados as $fila) {
-        $clientes_por_etapa[$fila['etapa_actual']] = $fila['total'];
-    }
-} catch (PDOException $e) {
-    die("Error al cargar métricas: " . $e->getMessage());
-}
-
-// 2. Metas Diarias (Por ahora fijas, luego vendrán del Administrador)
-$metas_diarias = [1 => 10, 2 => 5, 3 => 4, 4 => 2];
-
-// 3. Función para calcular el color del semáforo según el porcentaje de cumplimiento
-function calcularColorSemaforo($logrado, $meta) {
-    $porcentaje = ($meta > 0) ? ($logrado / $meta) * 100 : 0;
-    
-    // Umbrales sugeridos en el requerimiento
-    if ($porcentaje >= 80) {
-        return ['clase' => 'bg-success text-white', 'texto' => 'Óptimo', 'icono' => 'bi-check-circle'];
-    } elseif ($porcentaje >= 41) {
-        return ['clase' => 'bg-warning text-dark', 'texto' => 'Regular', 'icono' => 'bi-exclamation-triangle'];
-    } else {
-        return ['clase' => 'bg-danger text-white', 'texto' => 'Crítico', 'icono' => 'bi-x-circle'];
-    }
-}
-?>
-
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="p-4 bg-white rounded-3 shadow-sm border-start border-4 border-primary">
-            <h2 class="fw-bold m-0 text-dark">Asesor: <?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?></h2>
-            <p class="text-muted m-0 mt-1"><i class="bi bi-geo-alt-fill text-danger"></i> Región Metropolitana — Fuerza de ventas en terreno</p>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-3">
-    <div class="col-12">
-        <h4 class="text-uppercase text-secondary fw-bold tracking-wide">Control de Metas Diarias (Semáforo Dinámico)</h4>
-    </div>
-</div>
-
-<div class="row g-3">
-    <?php 
-    $nombres_etapas = [
-        1 => 'Prospectos', 
-        2 => 'Agendamientos', 
-        3 => 'Citas Realizadas', 
-        4 => 'Ventas Cerradas'
+    $diccionario_inverso = [
+        'prospectos' => 1,
+        'agendas' => 2,
+        'citas' => 3,
+        'ventas' => 4
     ];
 
-    for ($i = 1; $i <= 4; $i++): 
-        $logrado = $clientes_por_etapa[$i];
-        $meta = $metas_diarias[$i];
-        $semaforo = calcularColorSemaforo($logrado, $meta);
+    $metas = [];
+    foreach ($rowsMetas as $r) {
+        if (isset($diccionario_inverso[$r['etapa']])) {
+            $indice = $diccionario_inverso[$r['etapa']];
+            $metas[$indice] = $r;
+        }
+    }
+    
+    // Fallback por si la base de datos no trae alguna etapa
+    for ($i = 1; $i <= 4; $i++) {
+        if (!isset($metas[$i])) {
+            $metas[$i] = ['meta_diaria' => 10, 'min_amarillo' => 41, 'min_verde' => 80];
+        }
+    }
+
+    // 2. OBTENER EL RENDIMIENTO REAL DEL VENDEDOR DESDE EL EMBUDO
+    $sqlStats = "SELECT etapa_actual, COUNT(*) as total FROM clientes WHERE id_vendedor = :id_vendedor GROUP BY etapa_actual";
+    $stmtStats = $pdo->prepare($sqlStats);
+    $stmtStats->execute([':id_vendedor' => $id_vendedor]);
+    $stats = $stmtStats->fetchAll(PDO::FETCH_ASSOC);
+
+    $logros = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+    foreach($stats as $row) {
+        $logros[(int)$row['etapa_actual']] = (int)$row['total'];
+    }
+
+} catch (PDOException $e) {
+    die("Error al cargar las estadísticas: " . $e->getMessage());
+}
+
+$nombres_etapas = [
+    1 => 'Prospectos Capturados',
+    2 => 'Citas Agendadas',
+    3 => 'Perfilados Realizados',
+    4 => 'Ventas Cerradas'
+];
+
+$iconos_etapas = [
+    1 => 'bi-person-plus',
+    2 => 'bi-calendar-check',
+    3 => 'bi-chat-square-text',
+    4 => 'bi-award'
+];
+?>
+
+<div class="mb-4 border-bottom pb-3 mt-4">
+    <h2 class="fw-bold text-dark"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Mis Estadísticas de Rendimiento</h2>
+    <p class="text-muted small">Aquí puedes monitorear tu progreso frente a las metas impuestas por la corporación para el día de hoy.</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <?php for ($i = 1; $i <= 4; $i++): 
+        $meta = (int)$metas[$i]['meta_diaria'];
+        $logro = (int)$logros[$i];
+        
+        // Evitamos división por cero
+        $porcentaje = $meta > 0 ? round(($logro / $meta) * 100) : 0;
+        
+        $min_amarillo = (int)$metas[$i]['min_amarillo'];
+        $min_verde = (int)$metas[$i]['min_verde'];
+
+        // LÓGICA MATEMÁTICA DEL SEMÁFORO
+        if ($porcentaje >= $min_verde) {
+            $color_clase = 'success';
+            $texto_estado = '¡Meta Superada!';
+            $icono_semaforo = 'bi-check-circle-fill';
+        } elseif ($porcentaje >= $min_amarillo) {
+            $color_clase = 'warning';
+            $texto_estado = 'En Progreso';
+            $icono_semaforo = 'bi-exclamation-triangle-fill';
+        } else {
+            $color_clase = 'danger';
+            $texto_estado = 'Rendimiento Bajo';
+            $icono_semaforo = 'bi-x-circle-fill';
+        }
+        
+        // Si superan el 100%, la barra visual se topa en 100 para no romper el diseño CSS
+        $porcentaje_barra = $porcentaje > 100 ? 100 : $porcentaje;
     ?>
-    <div class="col-md-3">
-        <div class="card shadow-sm p-3 h-100 <?php echo $semaforo['clase']; ?>" style="border-radius: 12px; border: none;">
-            <div class="d-flex justify-content-between align-items-center opacity-75">
-                <span class="small fw-bold text-uppercase">Etapa <?php echo $i; ?></span>
-                <span><i class="bi <?php echo $semaforo['icono']; ?>"></i> <?php echo $semaforo['texto']; ?></span>
-            </div>
-            <div class="card-body p-0 mt-3">
-                <h6 class="card-title m-0 opacity-75"><?php echo $nombres_etapas[$i]; ?></h6>
-                <h2 class="display-4 fw-bold my-1"><?php echo $logrado; ?></h2>
-                <p class="small m-0 fw-bold">Meta diaria: <?php echo $meta; ?></p>
-            </div>
-            <div class="progress mt-3" style="height: 6px; background-color: rgba(255,255,255,0.3);">
-                <div class="progress-bar bg-white" role="progressbar" style="width: <?php echo min(($logrado/$meta)*100, 100); ?>%"></div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card shadow-sm border-0 border-bottom border-4 border-<?php echo $color_clase; ?> h-100" style="background-color: #626f8d;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-white text-uppercase mb-0">Etapa <?php echo $i; ?></h6>
+                    <i class="bi <?php echo $iconos_etapas[$i]; ?> fs-4 text-white opacity-75"></i>
+                </div>
+                
+                <h5 class="fw-bold text-white mb-1"><?php echo $nombres_etapas[$i]; ?></h5>
+                <h2 class="display-5 fw-bold text-<?php echo $color_clase; ?> mb-3">
+                    <?php echo $logro; ?> <span class="fs-6 text-white opacity-50 fw-normal">/ <?php echo $meta; ?> meta</span>
+                </h2>
+
+                <div class="d-flex justify-content-between text-white small fw-bold mb-1">
+                    <span>Avance</span>
+                    <span><?php echo $porcentaje; ?>%</span>
+                </div>
+                
+                <div class="progress mb-3" style="height: 10px; background-color: #343e55;">
+                    <div class="progress-bar bg-<?php echo $color_clase; ?> progress-bar-striped progress-bar-animated" 
+                         role="progressbar" 
+                         style="width: <?php echo $porcentaje_barra; ?>%;">
+                    </div>
+                </div>
+
+                <div class="text-center mt-auto">
+                    <span class="badge bg-<?php echo $color_clase; ?> bg-opacity-25 text-white w-100 py-2 border border-<?php echo $color_clase; ?>">
+                        <i class="bi <?php echo $icono_semaforo; ?> me-1"></i><?php echo $texto_estado; ?>
+                    </span>
+                    <div class="mt-2 text-white small opacity-50" style="font-size: 0.7rem;">
+                        [Amarillo: <?php echo $min_amarillo; ?>% | Verde: <?php echo $min_verde; ?>%]
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <?php endfor; ?>
 </div>
 
-<div class="row mt-4 g-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm p-4 h-100 bg-white">
-            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-sliders me-2 text-primary"></i>Configuración de Umbrales Personales</h5>
-            <p class="text-muted small">Sobrescribe los rangos base sugeridos por el administrador corporativo para elevar tus niveles de autoexigencia.</p>
-            <form action="../ajax/actualizar_meta.php" method="POST" class="mt-3">
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <label class="form-label small text-secondary">Mínimo Amarillo (%)</label>
-                        <input type="number" class="form-control" name="min_amarillo" value="41" min="1" max="100">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small text-secondary">Mínimo Verde (%)</label>
-                        <input type="number" class="form-control" name="min_verde" value="80" min="1" max="100">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-sm btn-primary px-4 rounded-pill">Guardar Umbrales</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="card shadow-sm p-4 h-100 bg-white d-flex flex-column justify-content-between">
-            <div>
-                <h5 class="fw-bold mb-2 text-dark"><i class="bi bi-arrow-right-circle me-2 text-primary"></i>Operación del Embudo</h5>
-                <p class="text-muted small m-0">El paso de una fase a otra exige el ingreso progresivo de datos obligatorios en el sistema.</p>
-            </div>
-            <div class="pt-3">
-                <a href="embudo.php" class="btn btn-dark w-100 rounded-pill py-2">
-                    <i class="bi bi-briefcase me-2"></i> Abrir Mi Tablero de Clientes
-                </a>
-            </div>
-        </div>
+<div class="alert bg-dark text-white border-0 shadow-sm d-flex align-items-center p-4 rounded-3" style="background-color: #343e55 !important;">
+    <i class="bi bi-lightbulb text-warning display-4 me-4"></i>
+    <div>
+        <h5 class="fw-bold mb-1">Consejo de Ingeniería de Ventas</h5>
+        <p class="mb-0 text-light opacity-75">Las metas están definidas por la corporación y se actualizan en tiempo real. Un semáforo en <span class="text-danger fw-bold">rojo</span> no significa fracaso, sino una oportunidad para redirigir tu esfuerzo hacia esa etapa del embudo. ¡Concéntrate en avanzar tus prospectos a la zona <span class="text-success fw-bold">verde</span>!</p>
     </div>
 </div>
 
