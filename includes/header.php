@@ -1,10 +1,8 @@
 <?php
-// includes/header.php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Detectamos el archivo actual en ejecución para aplicar clases "active" dinámicas de CSS/Bootstrap
 $pagina_actual = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>

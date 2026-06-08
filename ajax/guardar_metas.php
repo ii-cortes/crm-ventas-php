@@ -1,5 +1,4 @@
 <?php
-// ajax/guardar_metas.php
 session_start();
 require_once '../includes/db.php';
 
@@ -8,7 +7,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     try {
         $pdo->beginTransaction();
 
-        // DICCIONARIO TRADUCTOR: Convierte nuestro ciclo 1 al 4 a las palabras de tu ENUM
         $diccionario_etapas = [
             1 => 'prospectos',
             2 => 'agendas',
@@ -22,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
             $min_amarillo = (int)$_POST["min_amarillo_{$i}"];
             $min_verde = (int)$_POST["min_verde_{$i}"];
             
-            // Usamos el diccionario para extraer la palabra exacta que tu base de datos exige
             $etapa_enum = $diccionario_etapas[$i]; 
 
             if ($min_amarillo >= $min_verde) {
@@ -30,7 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
                 die("Error crítico: En la etapa {$i}, el mínimo amarillo no puede superar o igualar al mínimo verde.");
             }
 
-            // PATRÓN UPSERT adaptado a tu ENUM
             $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM metas_corporativas WHERE etapa = :etapa");
             $checkStmt->bindParam(':etapa', $etapa_enum, PDO::PARAM_STR);
             $checkStmt->execute();

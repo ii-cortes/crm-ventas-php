@@ -1,5 +1,4 @@
 <?php
-// ajax/editar_prospecto.php
 session_start();
 require_once '../includes/db.php';
 
@@ -13,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     $comuna = trim($_POST['comuna']);
 
     try {
-        // ACTUALIZAMOS SOLO NOMBRE, TELÉFONO Y COMUNA
         $sql = "UPDATE clientes 
                 SET nombre_completo = :nombre, 
                     telefono = :telefono, 

@@ -1,5 +1,4 @@
 <?php
-// ajax/editar_producto.php
 session_start();
 require_once '../includes/db.php';
 
@@ -17,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     }
 
     try {
-        // Sentencia parametrizada para actualizar todo el modelo extendido
         $sql = "UPDATE catalogo 
                 SET nombre = :nombre, 
                     tipo = :tipo, 

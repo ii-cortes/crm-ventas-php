@@ -1,5 +1,4 @@
 <?php
-// includes/header.php abre un <div class="container my-4">, aquí lo cerramos
 ?>
 </div> 
 

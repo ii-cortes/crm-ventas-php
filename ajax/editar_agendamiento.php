@@ -1,5 +1,4 @@
 <?php
-// ajax/editar_agendamiento.php
 session_start();
 require_once '../includes/db.php';
 
@@ -10,10 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     
     $fecha_cita = $_POST['fecha_cita'];
     $hora_cita = $_POST['hora_cita'];
-    $correo = trim($_POST['correo']); // Captura de la corrección del correo
+    $correo = trim($_POST['correo']);
 
     try {
-        // Actualizamos SOLO la fecha, la hora y el correo del agendamiento
         $sql = "UPDATE clientes 
                 SET fecha_cita = :fecha_cita, 
                     hora_cita = :hora_cita,

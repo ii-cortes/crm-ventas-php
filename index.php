@@ -1,9 +1,6 @@
 <?php
-// index.php
-// Iniciamos la sesión para poder guardar los datos del usuario una vez que ingrese
 session_start();
 
-// Si el usuario ya está logueado, lo redirigimos a su dashboard correspondiente
 if (isset($_SESSION['usuario_rol'])) {
     if ($_SESSION['usuario_rol'] == 'admin') {
         header("Location: admin/dashboard.php");
@@ -21,7 +18,6 @@ if (isset($_SESSION['usuario_rol'])) {
     <title>Login | CRM Funeraria</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Un poco de CSS personalizado para centrar el formulario (UI) */
         body {
             background-color: #f4f6f9; /* Color de fondo estilo AdminLTE */
             height: 100vh;

@@ -1,5 +1,4 @@
 <?php
-// ajax/editar_perfilado.php
 session_start();
 require_once '../includes/db.php';
 
@@ -13,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     $fecha_nacimiento = $_POST['fecha_nacimiento'];
 
     try {
-        // Actualizamos SOLAMENTE los datos de la Etapa 3
         $sql = "UPDATE clientes 
                 SET rut = :rut, 
                     genero = :genero, 

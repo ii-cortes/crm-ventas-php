@@ -1,21 +1,17 @@
 <?php
-// ajax/avanzar_etapa3.php
 session_start();
 require_once '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'vendedor') {
     
-    // Captura de datos
     $id_cliente = $_POST['id_cliente'];
     $id_vendedor = $_SESSION['usuario_id'];
     
-    // Captura de los datos duros (Perfilado Progresivo exigido)
     $rut = trim($_POST['rut']);
     $genero = $_POST['genero'];
     $fecha_nacimiento = $_POST['fecha_nacimiento'];
     
     try {
-        // Actualizamos la base de datos SOLO con los campos requeridos en esta etapa
         $sql = "UPDATE clientes 
                 SET rut = :rut, 
                     genero = :genero, 
