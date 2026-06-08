@@ -1,5 +1,4 @@
 <?php
-// admin/dashboard.php
 session_start();
 if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'admin') {
     header("Location: ../index.php");
@@ -10,11 +9,9 @@ require_once '../includes/db.php';
 include '../includes/header.php';
 
 try {
-    // Cargamos los datos de la base de datos (que vienen como 'prospectos', 'agendas', etc.)
     $stmt = $pdo->query("SELECT id, etapa, meta_diaria, min_amarillo, min_verde FROM metas_corporativas");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // DICCIONARIO INVERSO: Convierte la palabra del ENUM a números (1,2,3,4) para el HTML
     $diccionario_inverso = [
         'prospectos' => 1,
         'agendas' => 2,
@@ -30,14 +27,13 @@ try {
         }
     }
     
-    // Fallback de seguridad: por si faltan datos
     for ($i = 1; $i <= 4; $i++) {
         if (!isset($metas[$i])) {
             $metas[$i] = ['meta_diaria' => 10, 'min_amarillo' => 41, 'min_verde' => 80];
         }
     }
 } catch (PDOException $e) {
-    die("Error crítico al cargar las metas corporativas: " . $e->getMessage());
+    die("Error critico.");
 }
 
 $nombres_etapas = [
@@ -48,74 +44,79 @@ $nombres_etapas = [
 ];
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-3 mt-4">
-    <h2 class="fw-bold text-dark"><i class="bi bi-sliders me-2"></i>Configuración de Metas Corporativas</h2>
-</div>
-<p class="text-muted small mb-4">Ajuste los valores de meta diaria y los umbrales mínimos del semáforo de rendimiento para cada etapa del embudo comercial de la funeraria.</p>
+<main class="container-fluid py-4">
+    <header class="d-flex justify-content-between align-items-center mb-3 mt-4">
+        <h2 class="fw-bold text-dark"><i class="bi bi-sliders me-2"></i>Configuración de Metas Corporativas</h2>
+    </header>
+    
+    <p class="text-muted small mb-4">Ajuste los valores de meta diaria y los umbrales mínimos del semáforo de rendimiento para cada etapa del embudo comercial de la funeraria.</p>
 
-<?php if (isset($_GET['success'])): ?>
-    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>Estrategia corporativa de metas y semáforos actualizada con éxito.
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
-
-<form action="../ajax/guardar_metas.php" method="POST">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th style="width: 30%;">Etapa del Embudo</th>
-                            <th style="width: 15%;" class="text-center">Meta Diaria (Entero)</th>
-                            <th style="width: 15%;" class="text-center">Min. Amarillo (%)</th>
-                            <th style="width: 15%;" class="text-center">Min. Verde (%)</th>
-                            <th style="width: 25%;" class="text-center">Rangos del Semáforo Calculados</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php for ($i = 1; $i <= 4; $i++): ?>
-                        <tr class="fila-meta" data-etapa="<?php echo $i; ?>">
-                            <td class="fw-bold text-secondary fs-6">
-                                <?php echo $nombres_etapas[$i]; ?>
-                            </td>
-                            <td>
-                                <input type="number" class="form-control text-center fw-bold fs-5 input-meta-diaria" 
-                                       name="meta_diaria_<?php echo $i; ?>" min="1" step="1" required 
-                                       value="<?php echo htmlspecialchars($metas[$i]['meta_diaria']); ?>">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control text-center fw-bold fs-5 input-amarillo" 
-                                       name="min_amarillo_<?php echo $i; ?>" min="1" max="98" required 
-                                       value="<?php echo htmlspecialchars($metas[$i]['min_amarillo']); ?>">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control text-center fw-bold fs-5 input-verde" 
-                                       name="min_verde_<?php echo $i; ?>" min="2" max="100" required 
-                                       value="<?php echo htmlspecialchars($metas[$i]['min_verde']); ?>">
-                            </td>
-                            <td>
-                                <div class="d-flex flex-column gap-1 small text-center fw-bold px-2">
-                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger txt-rango-rojo">Rojo: 0% - --%</span>
-                                    <span class="badge bg-warning bg-opacity-10 text-dark border border-warning txt-rango-amarillo">Amarillo: --% - --%</span>
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success txt-rango-verde">Verde: --%+</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endfor; ?>
-                    </tbody>
-                </table>
-            </div>
+    <?php if (isset($_GET['success'])): ?>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>Estrategia corporativa de metas y semáforos actualizada con éxito.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    </div>
+    <?php endif; ?>
 
-    <div class="text-end mt-4">
-        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm px-5">
-            <i class="bi bi-save me-2"></i>Guardar Parámetros Corporativos
-        </button>
-    </div>
-</form>
+    <section>
+        <form action="../ajax/guardar_metas.php" method="POST">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="w-25">Etapa del Embudo</th>
+                                    <th class="text-center">Meta Diaria (Entero)</th>
+                                    <th class="text-center">Min. Amarillo (%)</th>
+                                    <th class="text-center">Min. Verde (%)</th>
+                                    <th class="w-25 text-center">Rangos del Semáforo Calculados</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php for ($i = 1; $i <= 4; $i++): ?>
+                                <tr class="fila-meta" data-etapa="<?php echo $i; ?>">
+                                    <td class="fw-bold text-secondary fs-6">
+                                        <?php echo $nombres_etapas[$i]; ?>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control text-center fw-bold fs-5 input-meta-diaria" 
+                                               name="meta_diaria_<?php echo $i; ?>" min="1" step="1" required 
+                                               value="<?php echo htmlspecialchars($metas[$i]['meta_diaria']); ?>">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control text-center fw-bold fs-5 input-amarillo" 
+                                               name="min_amarillo_<?php echo $i; ?>" min="1" max="98" required 
+                                               value="<?php echo htmlspecialchars($metas[$i]['min_amarillo']); ?>">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control text-center fw-bold fs-5 input-verde" 
+                                               name="min_verde_<?php echo $i; ?>" min="2" max="100" required 
+                                               value="<?php echo htmlspecialchars($metas[$i]['min_verde']); ?>">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-1 small text-center fw-bold px-2">
+                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger txt-rango-rojo">Rojo: 0% - --%</span>
+                                            <span class="badge bg-warning bg-opacity-10 text-dark border border-warning txt-rango-amarillo">Amarillo: --% - --%</span>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success txt-rango-verde">Verde: --%+</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endfor; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm px-5">
+                    <i class="bi bi-save me-2"></i>Guardar Parámetros Corporativos
+                </button>
+            </div>
+        </form>
+    </section>
+</main>
 
 <?php include '../includes/footer.php'; ?>
 
