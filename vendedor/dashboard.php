@@ -11,14 +11,13 @@ include '../includes/header.php';
 
 $id_vendedor = $_SESSION['usuario_id'];
 
-// 1. CAPTURA Y SANITIZACIÓN DEL FILTRO TEMPORAL (CRITERIO DE ACEPTACIÓN 2)
+// 1. CAPTURA Y SANITIZACIÓN DEL FILTRO TEMPORAL
 $filtro = $_GET['filtro'] ?? 'diario';
 if (!in_array($filtro, ['diario', 'semanal', 'mensual'])) {
     $filtro = 'diario';
 }
 
-// CORRECCIÓN SQL: Usamos tu columna real 'fecha_registro'
-$sql_tiempo = " AND DATE(clientes.fecha_registro) = CURDATE()"; // Por defecto Diario
+$sql_tiempo = " AND DATE(clientes.fecha_registro) = CURDATE()"; 
 $texto_temporal = "hoy";
 
 if ($filtro === 'semanal') {
@@ -30,19 +29,33 @@ if ($filtro === 'semanal') {
 }
 
 try {
-    // 2. OBTENER LAS METAS CORPORATIVAS (DICCIONARIO ENUM)
-    $stmtMetas = $pdo->query("SELECT etapa, meta_diaria, min_amarillo, min_verde FROM metas_corporativas");
+    // 2. OBTENER LAS METAS EN CASCADA (Ajustado a tu tabla metas_vendedor)
+    $sqlMetas = "
+        SELECT 
+            c.etapa,
+            c.meta_diaria, /* Siempre se rige por la meta corporativa */
+            COALESCE(v.min_amarillo_personal, c.min_amarillo) as min_amarillo,
+            COALESCE(v.min_verde_personal, c.min_verde) as min_verde,
+            IF(v.id IS NOT NULL, 1, 0) as es_personalizada
+        FROM metas_corporativas c
+        LEFT JOIN metas_vendedor v ON c.etapa = v.etapa AND v.id_vendedor = :id_vendedor
+    ";
+    
+    $stmtMetas = $pdo->prepare($sqlMetas);
+    $stmtMetas->execute([':id_vendedor' => $id_vendedor]);
     $rowsMetas = $stmtMetas->fetchAll(PDO::FETCH_ASSOC);
     
     $diccionario_inverso = ['prospectos' => 1, 'agendas' => 2, 'citas' => 3, 'ventas' => 4];
     $metas = [];
+    $hay_metas_personalizadas = false;
+
     foreach ($rowsMetas as $r) {
         if (isset($diccionario_inverso[$r['etapa']])) {
             $metas[$diccionario_inverso[$r['etapa']]] = $r;
+            if($r['es_personalizada']) $hay_metas_personalizadas = true;
         }
     }
     
-    // Ajuste proporcional de metas según el filtro (Si es semanal multiplicamos por 5, si es mensual por 20)
     $factor_meta = 1;
     if ($filtro === 'semanal') $factor_meta = 5;
     if ($filtro === 'mensual') $factor_meta = 20;
@@ -51,11 +64,10 @@ try {
         if (!isset($metas[$i])) {
             $metas[$i] = ['meta_diaria' => 10, 'min_amarillo' => 41, 'min_verde' => 80];
         }
-        // Escalamos la meta numéricamente para que sea realista con el filtro
         $metas[$i]['meta_calculada'] = $metas[$i]['meta_diaria'] * $factor_meta;
     }
 
-    // 3. OBTENER EL RENDIMIENTO REAL FILTRADO EN TIEMPO REAL (CRITERIO DE ACEPTACIÓN 1)
+    // 3. OBTENER EL RENDIMIENTO REAL 
     $sqlStats = "SELECT etapa_actual, COUNT(*) as total 
                  FROM clientes 
                  WHERE id_vendedor = :id_vendedor $sql_tiempo 
@@ -76,7 +88,7 @@ try {
 
 $nombres_etapas = [1 => 'Prospectos', 2 => 'Agendados', 3 => 'Citas', 4 => 'Ventas'];
 
-// 4. ALGORITMO DE TEXTOS MOTIVADORES DINÁMICOS
+// 4. ALGORITMO DE TEXTOS MOTIVADORES
 $prospectos_actuales = $logros[1];
 $prospectos_meta = $metas[1]['meta_calculada'];
 $ventas_actuales = $logros[4];
@@ -90,16 +102,33 @@ if ($ventas_actuales > 0) {
 
 <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
     <div>
-        <h2 class="fw-bold text-dark"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Mi Panel de Rendimiento</h2>
+        <h2 class="fw-bold text-dark">
+            <i class="bi bi-pie-chart-fill text-primary me-2"></i>Mi Panel de Rendimiento
+            <?php if($hay_metas_personalizadas): ?>
+                <span class="badge bg-info text-dark fs-6 ms-2" title="Estás operando con tus propios semáforos">Semáforos Personalizados</span>
+            <?php endif; ?>
+        </h2>
         <p class="text-muted small mb-0">Monitoreo interactivo de KPI comerciales para terreno.</p>
     </div>
     
-    <div class="btn-group shadow-sm" role="group">
-        <a href="dashboard.php?filtro=diario" class="btn btn-sm <?php echo $filtro === 'diario' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold px-3">Diario</a>
-        <a href="dashboard.php?filtro=semanal" class="btn btn-sm <?php echo $filtro === 'semanal' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold px-3">Semanal</a>
-        <a href="dashboard.php?filtro=mensual" class="btn btn-sm <?php echo $filtro === 'mensual' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold px-3">Mensual</a>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalMetasPersonales">
+            <i class="bi bi-gear-fill me-1"></i> Configurar Semáforos
+        </button>
+        <div class="btn-group shadow-sm" role="group">
+            <a href="dashboard.php?filtro=diario" class="btn btn-sm <?php echo $filtro === 'diario' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold px-3">Diario</a>
+            <a href="dashboard.php?filtro=semanal" class="btn btn-sm <?php echo $filtro === 'semanal' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold px-3">Semanal</a>
+            <a href="dashboard.php?filtro=mensual" class="btn btn-sm <?php echo $filtro === 'mensual' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold px-3">Mensual</a>
+        </div>
     </div>
 </div>
+
+<?php if (isset($_GET['success_metas'])): ?>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>Tus semáforos de rendimiento han sido actualizados con éxito.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
 
 <div class="alert alert-primary bg-opacity-10 text-primary border-primary d-flex align-items-center mb-4 shadow-sm" role="alert">
     <i class="bi bi-lightning-charge-fill fs-4 me-3"></i>
@@ -112,7 +141,6 @@ if ($ventas_actuales > 0) {
         $logro_c = $logros[$i];
         $pct = $meta_c > 0 ? round(($logro_c / $meta_c) * 100) : 0;
         
-        // Mantenemos los fondos pastel y tu ajuste de números oscuros
         if ($pct >= $metas[$i]['min_verde']) { 
             $clase = 'success'; $status = 'Excelente'; $bg_clase = 'bg-success bg-opacity-10'; 
         } elseif ($pct >= $metas[$i]['min_amarillo']) { 
@@ -158,63 +186,84 @@ if ($ventas_actuales > 0) {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="modal fade" id="modalMetasPersonales" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="../ajax/guardar_metas_personales.php" method="POST">
+                <div class="modal-header border-0 bg-light">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-sliders me-2 text-primary"></i>Personalizar Mis Semáforos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-4">La meta diaria es asignada por la empresa, pero puedes ajustar los umbrales de tus semáforos para ser más exigente con tu propio rendimiento.</p>
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr class="text-secondary small border-bottom">
+                                    <th>Etapa</th>
+                                    <th class="text-center">Meta Corp. (Fija)</th>
+                                    <th class="text-center">Min. Amarillo %</th>
+                                    <th class="text-center">Min. Verde %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php for ($i = 1; $i <= 4; $i++): ?>
+                                <tr>
+                                    <td class="fw-bold fs-6"><?php echo $nombres_etapas[$i]; ?></td>
+                                    <td class="text-center text-muted fw-bold">
+                                        <?php echo htmlspecialchars($metas[$i]['meta_diaria']); ?>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control text-center" 
+                                               name="min_amarillo_<?php echo $i; ?>" min="1" max="98" required 
+                                               value="<?php echo htmlspecialchars($metas[$i]['min_amarillo']); ?>">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control text-center" 
+                                               name="min_verde_<?php echo $i; ?>" min="2" max="100" required 
+                                               value="<?php echo htmlspecialchars($metas[$i]['min_verde']); ?>">
+                                    </td>
+                                </tr>
+                                <?php endfor; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary fw-bold shadow-sm">Guardar Mis Semáforos</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const etapas = ['Prospectos', 'Agendados', 'Citas', 'Ventas'];
     const datosLogros = [<?php echo $logros[1]; ?>, <?php echo $logros[2]; ?>, <?php echo $logros[3]; ?>, <?php echo $logros[4]; ?>];
     const datosMetas = [<?php echo $metas[1]['meta_calculada']; ?>, <?php echo $metas[2]['meta_calculada']; ?>, <?php echo $metas[3]['meta_calculada']; ?>, <?php echo $metas[4]['meta_calculada']; ?>];
 
-    // 1. RENDERIZACIÓN DEL GRÁFICO DE BARRAS
     new Chart(document.getElementById('chartBarras'), {
         type: 'bar',
         data: {
             labels: etapas,
             datasets: [
-                {
-                    label: 'Mi Logro Real',
-                    data: datosLogros,
-                    backgroundColor: '#0d6efd', // Color azul Bootstrap para que combine
-                    borderRadius: 5
-                },
-                {
-                    label: 'Meta',
-                    data: datosMetas,
-                    backgroundColor: '#e2e8f0',
-                    borderRadius: 5
-                }
+                { label: 'Mi Logro Real', data: datosLogros, backgroundColor: '#0d6efd', borderRadius: 5 },
+                { label: 'Meta Corporativa', data: datosMetas, backgroundColor: '#e2e8f0', borderRadius: 5 }
             ]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, grid: { display: false } },
-                x: { grid: { display: false } }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
     });
 
-    // 2. RENDERIZACIÓN DEL GRÁFICO DE ANILLO
     new Chart(document.getElementById('chartAnillo'), {
         type: 'doughnut',
         data: {
             labels: etapas,
-            datasets: [{
-                data: datosLogros,
-                backgroundColor: ['#0d6efd', '#ffc107', '#dc3545', '#198754'], 
-                borderWidth: 2,
-                hoverOffset: 4
-            }]
+            datasets: [{ data: datosLogros, backgroundColor: ['#0d6efd', '#ffc107', '#dc3545', '#198754'], borderWidth: 2, hoverOffset: 4 }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
     });
 });
 </script>
