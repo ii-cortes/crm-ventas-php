@@ -1,32 +1,22 @@
 <?php
-// ajax/avanzar_etapa2.php
 session_start();
-
-// Habilitar la visualización de errores para depurar (solo en desarrollo)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
+ini_set('display_errors', 0);
+error_reporting(0);
 require_once '../includes/db.php';
 
-// Validar que la petición sea POST y venga de un vendedor autenticado
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'vendedor') {
     
-    // Captura estricta de variables.
-    // Usamos trim() para limpiar espacios invisibles que puedan romper la base de datos.
     $id_cliente = trim($_POST['id_cliente'] ?? '');
     $id_vendedor = $_SESSION['usuario_id'];
     $fecha_cita = trim($_POST['fecha_cita'] ?? '');
     $hora_cita = trim($_POST['hora_cita'] ?? '');
     $correo = trim($_POST['correo'] ?? '');
 
-    // Validación extra de backend (Poka-Yoke estructural)
     if (empty($id_cliente) || empty($fecha_cita) || empty($hora_cita) || empty($correo)) {
-        die("Error: Faltan datos obligatorios para agendar la cita.");
+        die("Error de validacion.");
     }
 
     try {
-        // Actualizamos al cliente asegurándonos de que esté en la Etapa 1
         $sql = "UPDATE clientes 
                 SET fecha_cita = :fecha_cita, 
                     hora_cita = :hora_cita, 
@@ -35,8 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
                 WHERE id = :id_cliente AND id_vendedor = :id_vendedor AND etapa_actual = '1'";
         
         $stmt = $pdo->prepare($sql);
-        
-        // Ejecución con parámetros nombrados (previene Inyecciones SQL)
         $resultado = $stmt->execute([
             ':fecha_cita' => $fecha_cita,
             ':hora_cita' => $hora_cita,
@@ -45,20 +33,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
             ':id_vendedor' => $id_vendedor
         ]);
 
-        // Verificamos si realmente se actualizó alguna fila
         if ($stmt->rowCount() > 0) {
+            
+            $access_token = 'TU_TOKEN_OAUTH2_API_AQUI'; 
+            $fin_cita = date('H:i', strtotime($hora_cita) + 3600);
+            
+            $event = [
+                'summary' => 'Reunión de Asesoría Comercial',
+                'start' => ['dateTime' => $fecha_cita . 'T' . $hora_cita . ':00-04:00', 'timeZone' => 'America/Santiago'],
+                'end' => ['dateTime' => $fecha_cita . 'T' . $fin_cita . ':00-04:00', 'timeZone' => 'America/Santiago'],
+                'attendees' => [['email' => $correo]]
+            ];
+
+            $ch = curl_init('https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($event));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $access_token,
+                'Content-Type: application/json'
+            ]);
+            curl_exec($ch);
+            curl_close($ch);
+
+            $to = $correo;
+            $subject = "Invitacion a Reunion Comercial";
+            $message = "Hola, tu reunion ha sido agendada con exito para el " . $fecha_cita . " a las " . $hora_cita . " horas.";
+            $headers = "From: notificaciones@crmfuneraria.cl\r\nReply-To: soporte@crmfuneraria.cl\r\nX-Mailer: PHP/" . phpversion();
+            mail($to, $subject, $message, $headers);
+
             header("Location: ../vendedor/embudo.php?success=agendado");
             exit();
         } else {
-            // Si entra aquí, es porque el ID no existía, el vendedor no era el dueño, o ya estaba en Etapa 2
-            die("Error crítico: No se pudo actualizar el cliente. Verifica que el cliente esté en Etapa 1.");
+            die("Error en la actualización de etapa.");
         }
 
     } catch (PDOException $e) {
-        die("Error de Base de Datos al avanzar a etapa 2: " . $e->getMessage());
+        die("Error BD.");
     }
 } else {
-    // Intento de acceso malicioso
     header("Location: ../index.php");
     exit();
 }
