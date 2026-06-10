@@ -35,26 +35,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
 
         if ($stmt->rowCount() > 0) {
             
-            $access_token = 'TU_TOKEN_OAUTH2_API_AQUI'; 
-            $fin_cita = date('H:i', strtotime($hora_cita) + 3600);
-            
-            $event = [
-                'summary' => 'Reunión de Asesoría Comercial',
-                'start' => ['dateTime' => $fecha_cita . 'T' . $hora_cita . ':00-04:00', 'timeZone' => 'America/Santiago'],
-                'end' => ['dateTime' => $fecha_cita . 'T' . $fin_cita . ':00-04:00', 'timeZone' => 'America/Santiago'],
-                'attendees' => [['email' => $correo]]
-            ];
+            $env_path = __DIR__ . '/../.env';
+            if (!file_exists($env_path)) {
+                die("Error de configuracion.");
+            }
+            $env = parse_ini_file($env_path);
 
-            $ch = curl_init('https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all');
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($event));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Authorization: Bearer ' . $access_token,
-                'Content-Type: application/json'
-            ]);
-            curl_exec($ch);
-            curl_close($ch);
+            $client_id = $env['GOOGLE_CLIENT_ID'] ?? '';
+            $client_secret = $env['GOOGLE_CLIENT_SECRET'] ?? '';
+            $refresh_token = $env['GOOGLE_REFRESH_TOKEN'] ?? '';
+
+            $chToken = curl_init();
+            curl_setopt($chToken, CURLOPT_URL, 'https://oauth2.googleapis.com/token');
+            curl_setopt($chToken, CURLOPT_POST, true);
+            curl_setopt($chToken, CURLOPT_POSTFIELDS, http_build_query([
+                'client_id' => $client_id,
+                'client_secret' => $client_secret,
+                'refresh_token' => $refresh_token,
+                'grant_type' => 'refresh_token'
+            ]));
+            curl_setopt($chToken, CURLOPT_RETURNTRANSFER, true);
+            $resToken = curl_exec($chToken);
+            curl_close($chToken);
+            
+            $jsonToken = json_decode($resToken, true);
+            $access_token = $jsonToken['access_token'] ?? '';
+
+            if(!empty($access_token)) {
+                $fin_cita = date('H:i', strtotime($hora_cita) + 3600);
+                
+                $event = [
+                    'summary' => 'Reunion de Asesoria Comercial',
+                    'start' => ['dateTime' => $fecha_cita . 'T' . $hora_cita . ':00-04:00', 'timeZone' => 'America/Santiago'],
+                    'end' => ['dateTime' => $fecha_cita . 'T' . $fin_cita . ':00-04:00', 'timeZone' => 'America/Santiago'],
+                    'attendees' => [['email' => $correo]]
+                ];
+
+                $ch = curl_init('https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all');
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($event));
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Authorization: Bearer ' . $access_token,
+                    'Content-Type: application/json'
+                ]);
+                curl_exec($ch);
+                curl_close($ch);
+            }
 
             $to = $correo;
             $subject = "Invitacion a Reunion Comercial";
@@ -65,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
             header("Location: ../vendedor/embudo.php?success=agendado");
             exit();
         } else {
-            die("Error en la actualización de etapa.");
+            die("Error en la actualizacion de etapa.");
         }
 
     } catch (PDOException $e) {

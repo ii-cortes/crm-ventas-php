@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['usuario_rol'] = $usuario['rol'];
 
         if ($usuario['rol'] === 'admin') {
-            header("Location: ../admin/catalogo.php"); 
+            header("Location: ../admin/dashboard.php"); 
         } else if ($usuario['rol'] === 'vendedor') {
             header("Location: ../vendedor/embudo.php");
         }

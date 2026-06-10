@@ -17,8 +17,8 @@ try {
 ?>
 
 <main class="container-fluid py-4">
-    <header class="d-flex justify-content-between align-items-center mb-4 mt-4">
-        <h2 class="fw-bold text-dark"><i class="bi bi-journal-text me-2"></i>Catálogo de Servicios</h2>
+    <header class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark m-0"><i class="bi bi-journal-text me-2"></i>Catálogo de Servicios</h2>
         <button type="button" class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProducto">
             <i class="bi bi-plus-lg me-1"></i> Añadir Producto
         </button>
@@ -31,75 +31,91 @@ try {
         </section>
     <?php endif; ?>
 
-    <section class="card shadow-sm border-0">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th class="w-25">Nombre / Descripción Breve</th>
-                            <th>Categoría (Tipo)</th>
-                            <th>Precio (CLP)</th>
-                            <th>Estado</th>
-                            <th class="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($productos as $p): ?>
-                        <tr>
-                            <td class="text-muted fw-bold">#<?php echo $p['id']; ?></td>
-                            <td>
-                                <div class="fw-bold text-dark"><?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                <small class="text-muted d-block" title="<?php echo htmlspecialchars($p['descripcion_larga'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
-                                    <?php echo htmlspecialchars($p['descripcion_corta'] ?? 'Sin descripción breve', ENT_QUOTES, 'UTF-8'); ?>
-                                </small>
-                            </td>
-                            <td>
-                                <span class="badge bg-dark text-white border px-2 py-1.5"><?php echo htmlspecialchars($p['tipo'] ?? 'General', ENT_QUOTES, 'UTF-8'); ?></span>
-                            </td>
-                            <td class="text-success fw-bold">$<?php echo number_format($p['precio'], 0, ',', '.'); ?></td>
-                            <td>
-                                <?php if ($p['estado_prod'] == 1): ?>
-                                    <span class="badge bg-success">Activo</span>
-                                <?php else: ?>
-                                    <span class="badge bg-danger">Inactivo</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-outline-primary btn-editar-prod" 
-                                        data-bs-toggle="modal" data-bs-target="#modalEditarProducto"
-                                        data-id="<?php echo $p['id']; ?>"
-                                        data-nombre="<?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?>"
-                                        data-precio="<?php echo $p['precio']; ?>" 
-                                        data-tipo="<?php echo htmlspecialchars($p['tipo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                        data-desccorta="<?php echo htmlspecialchars($p['descripcion_corta'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                        data-desclarga="<?php echo htmlspecialchars($p['descripcion_larga'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                        title="Editar">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
+    <section>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-nowrap ps-4">ID</th>
+                                <th class="w-25">Servicio / Descripción</th>
+                                <th class="text-nowrap">Categoría</th>
+                                <th class="text-nowrap">Precio (CLP)</th>
+                                <th class="text-nowrap">Estado</th>
+                                <th class="text-center text-nowrap pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($productos as $p): 
+                                $nombre_str = $p['nombre'];
+                                $desc_str = $p['descripcion_corta'] ?? 'Sin descripción breve';
                                 
-                                <form action="../ajax/estado_producto.php" method="POST" class="d-inline">
-                                    <input type="hidden" name="id_producto" value="<?php echo $p['id']; ?>">
-                                    <input type="hidden" name="estado_actual" value="<?php echo $p['estado_prod']; ?>">
+                                if (mb_strlen($nombre_str) > 35) {
+                                    $nombre_str = mb_substr($nombre_str, 0, 32) . '...';
+                                }
+                                if (mb_strlen($desc_str) > 45) {
+                                    $desc_str = mb_substr($desc_str, 0, 42) . '...';
+                                }
+                            ?>
+                            <tr>
+                                <td class="text-muted fw-bold ps-4">#<?php echo $p['id']; ?></td>
+                                <td>
+                                    <div class="fw-bold text-dark" title="<?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?php echo htmlspecialchars($nombre_str, ENT_QUOTES, 'UTF-8'); ?>
+                                    </div>
+                                    <small class="text-muted d-block" title="<?php echo htmlspecialchars($p['descripcion_larga'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?php echo htmlspecialchars($desc_str, ENT_QUOTES, 'UTF-8'); ?>
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-dark text-white border px-2 py-1"><?php echo htmlspecialchars($p['tipo'] ?? 'General', ENT_QUOTES, 'UTF-8'); ?></span>
+                                </td>
+                                <td class="text-success fw-bold">$<?php echo number_format($p['precio'], 0, ',', '.'); ?></td>
+                                <td>
                                     <?php if ($p['estado_prod'] == 1): ?>
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar">
-                                            <i class="bi bi-eye-slash"></i>
-                                        </button>
+                                        <span class="badge bg-success">Activo</span>
                                     <?php else: ?>
-                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Activar">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
+                                        <span class="badge bg-danger">Inactivo</span>
                                     <?php endif; ?>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php if(empty($productos)): ?>
-                            <tr><td colspan="6" class="text-center text-muted py-4">No hay productos en el catálogo.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                                </td>
+                                <td class="pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-outline-primary btn-editar-prod" 
+                                                data-bs-toggle="modal" data-bs-target="#modalEditarProducto"
+                                                data-id="<?php echo $p['id']; ?>"
+                                                data-nombre="<?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-precio="<?php echo $p['precio']; ?>" 
+                                                data-tipo="<?php echo htmlspecialchars($p['tipo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-desccorta="<?php echo htmlspecialchars($p['descripcion_corta'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                                data-desclarga="<?php echo htmlspecialchars($p['descripcion_larga'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                                title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        
+                                        <form action="../ajax/estado_producto.php" method="POST" class="m-0 p-0">
+                                            <input type="hidden" name="id_producto" value="<?php echo $p['id']; ?>">
+                                            <input type="hidden" name="estado_actual" value="<?php echo $p['estado_prod']; ?>">
+                                            <?php if ($p['estado_prod'] == 1): ?>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar">
+                                                    <i class="bi bi-eye-slash"></i>
+                                                </button>
+                                            <?php else: ?>
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Activar">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php if(empty($productos)): ?>
+                                <tr><td colspan="6" class="text-center text-muted py-4">No hay productos en el catálogo.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </section>

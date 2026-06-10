@@ -57,14 +57,14 @@ foreach ($clientes as $cliente) {
     <section class="row flex-nowrap overflow-x-auto g-3 pb-4">
         
         <article class="col-11 col-md-3">
-            <div class="bg-light p-3 rounded shadow-sm border-top border-4 border-secondary h-100">
-                <h6 class="fw-bold text-secondary text-uppercase mb-3">1. Prospectos (<span class="badge bg-secondary"><?php echo count($etapa1); ?></span>)</h6>
+            <div class="bg-light p-3 rounded shadow-sm border-top border-4 border-primary h-100">
+                <h6 class="fw-bold text-primary text-uppercase mb-3">1. Prospectos (<span class="badge bg-primary text-white"><?php echo count($etapa1); ?></span>)</h6>
                 <?php foreach ($etapa1 as $c): ?>
                     <aside class="card mb-2 shadow-sm border-0">
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-start">
                                 <h6 class="fw-bold mb-1 text-dark"><?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></h6>
-                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-0 px-1 btn-editar-contacto" 
+                                <button type="button" class="btn btn-sm btn-outline-primary border-0 p-0 px-1 btn-editar-contacto" 
                                         data-bs-toggle="modal" data-bs-target="#modalEditarContacto"
                                         data-id="<?php echo $c['id']; ?>" 
                                         data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
@@ -74,7 +74,7 @@ foreach ($clientes as $cliente) {
                                 </button>
                             </div>
                             <div class="mb-2 mt-1">
-                                <p class="small text-muted mb-0"><i class="bi bi-telephone me-1"></i><?php echo htmlspecialchars($c['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
+                                <p class="small text-muted mb-0"><i class="bi bi-telephone me-1 text-primary"></i><?php echo htmlspecialchars($c['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                                 <p class="small text-muted mb-0"><i class="bi bi-geo-alt me-1 text-danger"></i><?php echo htmlspecialchars($c['comuna'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                             </div>
                             <button type="button" class="btn btn-sm btn-primary w-100 btn-agendar" data-bs-toggle="modal" data-bs-target="#modalAgendar"
@@ -105,7 +105,7 @@ foreach ($clientes as $cliente) {
                                 </button>
                             </div>
                             <div class="mb-2 mt-1">
-                                <p class="small text-muted mb-0"><i class="bi bi-telephone me-1 text-secondary"></i><?php echo htmlspecialchars($c['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
+                                <p class="small text-muted mb-0"><i class="bi bi-telephone me-1 text-primary"></i><?php echo htmlspecialchars($c['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                                 <p class="small text-muted mb-0"><i class="bi bi-geo-alt me-1 text-danger"></i><?php echo htmlspecialchars($c['comuna'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                                 <p class="small text-muted mb-0"><i class="bi bi-calendar-event me-1 text-primary"></i><?php echo htmlspecialchars($c['fecha_cita'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                                 <p class="small text-muted mb-0"><i class="bi bi-clock me-1 text-primary"></i>A las <?php echo htmlspecialchars($c['hora_cita'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
@@ -162,7 +162,7 @@ foreach ($clientes as $cliente) {
                         <div class="card-body p-3">
                             <h6 class="fw-bold mb-1 text-dark"><?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></h6>
                             <div class="mb-2 mt-1">
-                                <p class="small text-muted mb-0"><i class="bi bi-telephone me-1 text-secondary"></i><?php echo htmlspecialchars($c['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
+                                <p class="small text-muted mb-0"><i class="bi bi-telephone me-1 text-primary"></i><?php echo htmlspecialchars($c['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                                 <p class="small text-muted mb-0"><i class="bi bi-geo-alt me-1 text-danger"></i><?php echo htmlspecialchars($c['comuna'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                                 <p class="small text-muted mb-0 text-break"><i class="bi bi-envelope me-1 text-success"></i><?php echo htmlspecialchars($c['correo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                                 <p class="small text-muted mb-0"><i class="bi bi-person-badge me-1 text-danger"></i>RUT: <?php echo htmlspecialchars($c['rut'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
@@ -189,7 +189,7 @@ foreach ($clientes as $cliente) {
 <div class="modal fade" id="modalNuevoProspecto" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-secondary text-white">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Nuevo Prospecto</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -360,7 +360,7 @@ foreach ($clientes as $cliente) {
 <div class="modal fade" id="modalEditarContacto" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-secondary text-white">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Corregir Contacto</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>

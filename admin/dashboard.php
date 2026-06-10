@@ -45,17 +45,17 @@ $nombres_etapas = [
 ?>
 
 <main class="container-fluid py-4">
-    <header class="d-flex justify-content-between align-items-center mb-3 mt-4">
-        <h2 class="fw-bold text-dark"><i class="bi bi-sliders me-2"></i>Configuración de Metas Corporativas</h2>
+    <header class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark m-0"><i class="bi bi-sliders me-2"></i>Configuración de Metas Corporativas</h2>
     </header>
     
     <p class="text-muted small mb-4">Ajuste los valores de meta diaria y los umbrales mínimos del semáforo de rendimiento para cada etapa del embudo comercial de la funeraria.</p>
 
     <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <section class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i>Estrategia corporativa de metas y semáforos actualizada con éxito.
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        </section>
     <?php endif; ?>
 
     <section>
@@ -66,17 +66,17 @@ $nombres_etapas = [
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-dark">
                                 <tr>
-                                    <th class="w-25">Etapa del Embudo</th>
-                                    <th class="text-center">Meta Diaria (Entero)</th>
-                                    <th class="text-center">Min. Amarillo (%)</th>
-                                    <th class="text-center">Min. Verde (%)</th>
-                                    <th class="w-25 text-center">Rangos del Semáforo Calculados</th>
+                                    <th class="w-25 ps-4">Etapa del Embudo</th>
+                                    <th class="text-center text-nowrap">Meta Diaria (Entero)</th>
+                                    <th class="text-center text-nowrap">Min. Amarillo (%)</th>
+                                    <th class="text-center text-nowrap">Min. Verde (%)</th>
+                                    <th class="w-25 text-center pe-4">Rangos del Semáforo Calculados</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php for ($i = 1; $i <= 4; $i++): ?>
                                 <tr class="fila-meta" data-etapa="<?php echo $i; ?>">
-                                    <td class="fw-bold text-secondary fs-6">
+                                    <td class="fw-bold text-secondary fs-6 ps-4">
                                         <?php echo $nombres_etapas[$i]; ?>
                                     </td>
                                     <td>
@@ -94,7 +94,7 @@ $nombres_etapas = [
                                                name="min_verde_<?php echo $i; ?>" min="2" max="100" required 
                                                value="<?php echo htmlspecialchars($metas[$i]['min_verde']); ?>">
                                     </td>
-                                    <td>
+                                    <td class="pe-4">
                                         <div class="d-flex flex-column gap-1 small text-center fw-bold px-2">
                                             <span class="badge bg-danger bg-opacity-10 text-danger border border-danger txt-rango-rojo">Rojo: 0% - --%</span>
                                             <span class="badge bg-warning bg-opacity-10 text-dark border border-warning txt-rango-amarillo">Amarillo: --% - --%</span>

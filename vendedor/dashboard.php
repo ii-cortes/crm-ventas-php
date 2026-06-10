@@ -97,10 +97,10 @@ if ($ventas_actuales > 0) {
 <main class="container-fluid py-4">
     <header class="d-flex justify-content-between align-items-center mb-4 mt-4">
         <h2 class="fw-bold text-dark">
-            <i class="bi bi-pie-chart-fill text-primary me-2"></i>Panel de Rendimiento
+            <i class="bi bi-pie-chart-fill text-primary me-2"></i>Mi Panel de Rendimiento
         </h2>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalMetasPersonales">
+            <button type="button" class="btn btn-outline-primary btn-sm fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalMetasPersonales">
                 <i class="bi bi-gear-fill me-1"></i> Configurar Metas y Semáforos
             </button>
             <div class="btn-group shadow-sm" role="group">
@@ -188,7 +188,7 @@ if ($ventas_actuales > 0) {
                             <thead>
                                 <tr class="text-secondary small border-bottom">
                                     <th>Etapa</th>
-                                    <th class="text-center">Meta Diaria</th>
+                                    <th class="text-center">Mi Meta Diaria</th>
                                     <th class="text-center">Min. Amarillo %</th>
                                     <th class="text-center">Min. Verde %</th>
                                 </tr>
@@ -240,9 +240,9 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: etapas,
             datasets: [
-                { label: 'Logro Real', data: datosLogros, backgroundColor: '#0d6efd', borderRadius: 4 },
-                { label: 'Meta Personal', data: datosMetasPers, backgroundColor: '#6f42c1', borderRadius: 4 },
-                { label: 'Meta Corporativa', data: datosMetasCorp, backgroundColor: '#ced4da', borderRadius: 4 }
+                { label: 'Mi Logro Real', data: datosLogros, backgroundColor: '#b8bfc7', borderRadius: 4 },
+                { label: 'Mi Meta Personal', data: datosMetasPers, backgroundColor: '#6f42c1', borderRadius: 4 },
+                { label: 'Meta Corporativa', data: datosMetasCorp, backgroundColor: '#2b4fa3', borderRadius: 4 }
             ]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
