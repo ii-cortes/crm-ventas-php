@@ -4,7 +4,7 @@
 
 <footer class="text-center py-4 mt-5 border-top">
     <p class="text-muted small m-0">
-        &copy; <?php echo date('Y'); ?> CRM Módulo de Ventas y Catálogo. Uso interno y confidencial.
+        &copy; <?php echo date('Y'); ?> CRM Módulo de Ventas y Catálogo.
     </p>
 </footer>
 

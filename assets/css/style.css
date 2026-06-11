@@ -80,6 +80,10 @@ body {
     transform: scale(1.05);
 }
 
+.logo-blanco {
+    filter: brightness(0) invert(1);
+}
+
 input.form-control:focus, 
 select.form-select:focus, 
 textarea.form-control:focus {

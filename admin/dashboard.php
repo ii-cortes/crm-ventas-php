@@ -37,10 +37,10 @@ try {
 }
 
 $nombres_etapas = [
-    1 => '1. Prospectos (Etapa Inicial)',
-    2 => '2. Agendados (Citas Agendadas)',
-    3 => '3. Citas Realizadas (Perfilados)',
-    4 => '4. Ventas Cerradas (Contratos Ganados)'
+    1 => '1. Clientes',
+    2 => '2. Agendados',
+    3 => '3. Citas Realizadas',
+    4 => '4. Ventas Cerradas'
 ];
 ?>
 

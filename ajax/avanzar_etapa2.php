@@ -83,10 +83,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
                 curl_close($ch);
             }
 
+            $stmtVend = $pdo->prepare("SELECT correo FROM usuarios WHERE id = :id");
+            $stmtVend->execute([':id' => $id_vendedor]);
+            $rowVend = $stmtVend->fetch(PDO::FETCH_ASSOC);
+            $correo_vendedor = $rowVend ? $rowVend['correo'] : '';
+
             $to = $correo;
             $subject = "Invitacion a Reunion Comercial";
             $message = "Hola, tu reunion ha sido agendada con exito para el " . $fecha_cita . " a las " . $hora_cita . " horas.";
-            $headers = "From: notificaciones@crmfuneraria.cl\r\nReply-To: soporte@crmfuneraria.cl\r\nX-Mailer: PHP/" . phpversion();
+            
+            $headers = "From: notificaciones@crmfuneraria.cl\r\n";
+            if (!empty($correo_vendedor)) {
+                $headers .= "Cc: " . $correo_vendedor . "\r\n";
+            }
+            $headers .= "Reply-To: soporte@crmfuneraria.cl\r\nX-Mailer: PHP/" . phpversion();
+
             mail($to, $subject, $message, $headers);
 
             header("Location: ../vendedor/embudo.php?success=agendado");

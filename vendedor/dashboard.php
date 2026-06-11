@@ -15,14 +15,17 @@ if (!in_array($filtro, ['diario', 'semanal', 'mensual'])) {
     $filtro = 'diario';
 }
 
-$sql_tiempo = " AND DATE(clientes.fecha_registro) = CURDATE()"; 
+// ---------------------------------------------------------------
+// CORRECCIÓN: Filtramos por el último movimiento, no por la creación
+// ---------------------------------------------------------------
+$sql_tiempo = " AND DATE(clientes.ultima_actualizacion) = CURDATE()"; 
 $texto_temporal = "hoy";
 
 if ($filtro === 'semanal') {
-    $sql_tiempo = " AND clientes.fecha_registro >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+    $sql_tiempo = " AND clientes.ultima_actualizacion >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
     $texto_temporal = "esta semana";
 } elseif ($filtro === 'mensual') {
-    $sql_tiempo = " AND clientes.fecha_registro >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+    $sql_tiempo = " AND clientes.ultima_actualizacion >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
     $texto_temporal = "este mes";
 }
 
@@ -81,7 +84,7 @@ try {
     die("Error critico.");
 }
 
-$nombres_etapas = [1 => 'Prospectos', 2 => 'Agendados', 3 => 'Citas', 4 => 'Ventas'];
+$nombres_etapas = [1 => 'Clientes', 2 => 'Agendados', 3 => 'Citas', 4 => 'Ventas'];
 
 $prospectos_actuales = $logros[1];
 $prospectos_meta = $metas[1]['pers_calculada'];
@@ -90,7 +93,7 @@ $ventas_actuales = $logros[4];
 if ($ventas_actuales > 0) {
     $texto_motivador = "Espectacular. Llevas " . $ventas_actuales . " cierres de contratos exitosos " . $texto_temporal . ". Sigue asi.";
 } else {
-    $texto_motivador = "Llevas " . $prospectos_actuales . " de " . $prospectos_meta . " prospectos capturados " . $texto_temporal . ". Acelera el embudo.";
+    $texto_motivador = "Llevas " . $prospectos_actuales . " de " . $prospectos_meta . " clientes con movimientos " . $texto_temporal . ". Acelera el embudo.";
 }
 ?>
 

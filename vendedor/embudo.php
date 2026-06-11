@@ -43,7 +43,7 @@ foreach ($clientes as $cliente) {
     <header class="d-flex justify-content-between align-items-center mb-4 text-dark">
         <h2 class="fw-bold"><i class="bi bi-funnel me-2"></i>Embudo de Ventas</h2>
         <button type="button" class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProspecto">
-            <i class="bi bi-plus-circle me-1"></i> Nuevo Prospecto
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Cliente
         </button>
     </header>
 
@@ -58,7 +58,7 @@ foreach ($clientes as $cliente) {
         
         <article class="col-11 col-md-3">
             <div class="bg-light p-3 rounded shadow-sm border-top border-4 border-primary h-100">
-                <h6 class="fw-bold text-primary text-uppercase mb-3">1. Prospectos (<span class="badge bg-primary text-white"><?php echo count($etapa1); ?></span>)</h6>
+                <h6 class="fw-bold text-primary text-uppercase mb-3">1. Clientes (<span class="badge bg-primary text-white"><?php echo count($etapa1); ?></span>)</h6>
                 <?php foreach ($etapa1 as $c): ?>
                     <aside class="card mb-2 shadow-sm border-0">
                         <div class="card-body p-3">
@@ -190,7 +190,7 @@ foreach ($clientes as $cliente) {
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Nuevo Prospecto</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Nuevo Cliente</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="../ajax/guardar_prospecto.php" method="POST">
@@ -210,7 +210,7 @@ foreach ($clientes as $cliente) {
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-light border text-dark" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary fw-bold px-4">Guardar Prospecto</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Guardar Cliente</button>
                 </div>
             </form>
         </div>

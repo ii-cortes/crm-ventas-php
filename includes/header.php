@@ -19,8 +19,9 @@ $pagina_actual = basename($_SERVER['PHP_SELF']);
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container">
-        <a class="navbar-brand fw-bold text-white" href="#">
-            <i class="bi bi-building-fill-check text-primary me-2"></i>Funeraria UDP CRM
+        <a class="navbar-brand text-white fw-bold d-flex align-items-center" href="#">
+            <img src="../assets/img/logo.png" alt="Logo Universidad" width="35" height="35" class="me-2 logo-blanco">
+            CRM Funeraria
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
