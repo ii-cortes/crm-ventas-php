@@ -120,19 +120,23 @@ if ($ventas_actuales > 0) {
 ?>
 
 <main class="container-fluid py-4">
-    <header class="d-flex justify-content-between align-items-center mb-4 mt-4">
-        <h2 class="fw-bold text-dark">
+    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-center align-items-lg-center mb-4 mt-4 gap-3">
+        <h2 class="fw-bold text-dark text-center text-lg-start m-0">
             <i class="bi bi-pie-chart-fill text-primary me-2"></i>Mi Panel de Rendimiento
         </h2>
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-primary btn-sm fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalMetasPersonales">
-                <i class="bi bi-gear-fill me-1"></i> Configurar Metas y Semáforos
+        
+        <div class="d-flex flex-column flex-md-row gap-2 w-100 w-lg-auto justify-content-center justify-content-lg-end">
+            
+            <button type="button" class="btn btn-outline-primary btn-sm fw-bold px-3 shadow-sm w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#modalMetasPersonales">
+                <i class="bi bi-gear-fill me-1"></i> Configurar Metas
             </button>
-            <div class="btn-group shadow-sm" role="group">
-                <a href="dashboard.php?filtro=diario" class="btn btn-sm <?php echo $filtro === 'diario' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold px-3">Diario</a>
-                <a href="dashboard.php?filtro=semanal" class="btn btn-sm <?php echo $filtro === 'semanal' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold px-3">Semanal</a>
-                <a href="dashboard.php?filtro=mensual" class="btn btn-sm <?php echo $filtro === 'mensual' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold px-3">Mensual</a>
+            
+            <div class="btn-group shadow-sm w-100 w-md-auto" role="group">
+                <a href="dashboard.php?filtro=diario" class="btn btn-sm <?php echo $filtro === 'diario' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold">Diario</a>
+                <a href="dashboard.php?filtro=semanal" class="btn btn-sm <?php echo $filtro === 'semanal' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold">Semanal</a>
+                <a href="dashboard.php?filtro=mensual" class="btn btn-sm <?php echo $filtro === 'mensual' ? 'btn-primary' : 'btn-outline-primary'; ?> fw-bold">Mensual</a>
             </div>
+            
         </div>
     </header>
 
