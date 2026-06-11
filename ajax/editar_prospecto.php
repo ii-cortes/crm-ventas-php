@@ -3,10 +3,10 @@ session_start();
 require_once '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'vendedor') {
-    
+
     $id_cliente = $_POST['id_cliente'];
-    $id_vendedor = $_SESSION['usuario_id']; 
-    
+    $id_vendedor = $_SESSION['usuario_id'];
+
     $nombre = trim($_POST['nombre_completo']);
     $telefono = trim($_POST['telefono']);
     $comuna = trim($_POST['comuna']);
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
                     telefono = :telefono, 
                     comuna = :comuna 
                 WHERE id = :id_cliente AND id_vendedor = :id_vendedor";
-        
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':nombre' => $nombre,
@@ -29,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
 
         header("Location: ../vendedor/embudo.php?success=contacto_editado");
         exit();
-
     } catch (PDOException $e) {
         die("Error al actualizar el cliente: " . $e->getMessage());
     }
@@ -37,4 +36,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     header("Location: ../index.php");
     exit();
 }
-?>

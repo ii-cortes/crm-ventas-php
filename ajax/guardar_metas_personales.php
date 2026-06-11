@@ -4,7 +4,7 @@ require_once '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'vendedor') {
     $id_vendedor = $_SESSION['usuario_id'];
-    
+
     try {
         $pdo->beginTransaction();
 
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
             $meta_personal = !empty($_POST["meta_diaria_{$i}"]) ? (int)$_POST["meta_diaria_{$i}"] : null;
             $min_amarillo = (int)$_POST["min_amarillo_{$i}"];
             $min_verde = (int)$_POST["min_verde_{$i}"];
-            $etapa_enum = $diccionario_etapas[$i]; 
+            $etapa_enum = $diccionario_etapas[$i];
 
             if ($min_amarillo >= $min_verde) {
                 $pdo->rollBack();
@@ -40,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
         $pdo->commit();
         header("Location: ../vendedor/dashboard.php?success_metas=1");
         exit();
-
     } catch (PDOException $e) {
         $pdo->rollBack();
         die("Error de BD.");
@@ -49,4 +48,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     header("Location: ../index.php");
     exit();
 }
-?>

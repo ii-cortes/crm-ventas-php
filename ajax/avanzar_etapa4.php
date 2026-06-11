@@ -3,7 +3,7 @@ session_start();
 require_once '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'vendedor') {
-    
+
     $id_cliente = $_POST['id_cliente'];
     $id_vendedor = $_SESSION['usuario_id'];
     $id_producto = $_POST['id_producto'];
@@ -13,10 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
         $fileName = $_FILES['documento']['name'];
         $fileNameCmps = explode(".", $fileName);
         $fileExtension = strtolower(end($fileNameCmps));
-        
+
         $newFileName = uniqid() . '.' . $fileExtension;
         $uploadFileDir = '../uploads/';
-        
+
         if (!is_dir($uploadFileDir)) {
             mkdir($uploadFileDir, 0777, true);
         }
@@ -70,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
 
         header("Location: ../vendedor/embudo.php?success=venta_cerrada");
         exit();
-
     } catch (PDOException $e) {
         $pdo->rollBack();
         die("Error en la transacción: " . $e->getMessage());
@@ -79,4 +78,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     header("Location: ../index.php");
     exit();
 }
-?>

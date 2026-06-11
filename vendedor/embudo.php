@@ -16,25 +16,35 @@ try {
                     LEFT JOIN catalogo ON clientes.id_producto_venta = catalogo.id 
                     WHERE clientes.id_vendedor = :id_vendedor 
                     ORDER BY clientes.id DESC";
-                    
+
     $stmt = $pdo->prepare($sqlClientes);
     $stmt->execute([':id_vendedor' => $id_vendedor]);
     $clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $stmtCat = $pdo->query("SELECT * FROM catalogo WHERE estado = 1");
     $productos = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
-
 } catch (PDOException $e) {
     die("Error de base de datos.");
 }
 
-$etapa1 = []; $etapa2 = []; $etapa3 = []; $etapa4 = [];
+$etapa1 = [];
+$etapa2 = [];
+$etapa3 = [];
+$etapa4 = [];
 foreach ($clientes as $cliente) {
     switch ($cliente['etapa_actual']) {
-        case '1': $etapa1[] = $cliente; break;
-        case '2': $etapa2[] = $cliente; break;
-        case '3': $etapa3[] = $cliente; break;
-        case '4': $etapa4[] = $cliente; break;
+        case '1':
+            $etapa1[] = $cliente;
+            break;
+        case '2':
+            $etapa2[] = $cliente;
+            break;
+        case '3':
+            $etapa3[] = $cliente;
+            break;
+        case '4':
+            $etapa4[] = $cliente;
+            break;
     }
 }
 ?>
@@ -43,7 +53,7 @@ foreach ($clientes as $cliente) {
     <header class="d-flex justify-content-between align-items-center mb-4 text-dark">
         <h2 class="fw-bold"><i class="bi bi-funnel me-2"></i>Embudo de Ventas</h2>
         <button type="button" class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoProspecto">
-            <i class="bi bi-plus-circle me-1"></i> Nuevo Cliente
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Prospecto
         </button>
     </header>
 
@@ -55,21 +65,21 @@ foreach ($clientes as $cliente) {
     <?php endif; ?>
 
     <section class="row flex-nowrap overflow-x-auto g-3 pb-4">
-        
+
         <article class="col-11 col-md-3">
             <div class="bg-light p-3 rounded shadow-sm border-top border-4 border-primary h-100">
-                <h6 class="fw-bold text-primary text-uppercase mb-3">1. Clientes (<span class="badge bg-primary text-white"><?php echo count($etapa1); ?></span>)</h6>
+                <h6 class="fw-bold text-primary text-uppercase mb-3">1. Prospectos (<span class="badge bg-primary text-white"><?php echo count($etapa1); ?></span>)</h6>
                 <?php foreach ($etapa1 as $c): ?>
                     <aside class="card mb-2 shadow-sm border-0">
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-start">
                                 <h6 class="fw-bold mb-1 text-dark"><?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></h6>
-                                <button type="button" class="btn btn-sm btn-outline-primary border-0 p-0 px-1 btn-editar-contacto" 
-                                        data-bs-toggle="modal" data-bs-target="#modalEditarContacto"
-                                        data-id="<?php echo $c['id']; ?>" 
-                                        data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                        data-telefono="<?php echo htmlspecialchars($c['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" 
-                                        data-comuna="<?php echo htmlspecialchars($c['comuna'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                <button type="button" class="btn btn-sm btn-outline-primary border-0 p-0 px-1 btn-editar-contacto"
+                                    data-bs-toggle="modal" data-bs-target="#modalEditarContacto"
+                                    data-id="<?php echo $c['id']; ?>"
+                                    data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-telefono="<?php echo htmlspecialchars($c['telefono'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-comuna="<?php echo htmlspecialchars($c['comuna'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                             </div>
@@ -78,7 +88,7 @@ foreach ($clientes as $cliente) {
                                 <p class="small text-muted mb-0"><i class="bi bi-geo-alt me-1 text-danger"></i><?php echo htmlspecialchars($c['comuna'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                             </div>
                             <button type="button" class="btn btn-sm btn-primary w-100 btn-agendar" data-bs-toggle="modal" data-bs-target="#modalAgendar"
-                                    data-id="<?php echo $c['id']; ?>" data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                data-id="<?php echo $c['id']; ?>" data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                                 Avanzar a Agendar <i class="bi bi-arrow-right"></i>
                             </button>
                         </div>
@@ -95,12 +105,12 @@ foreach ($clientes as $cliente) {
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-start">
                                 <h6 class="fw-bold mb-1 text-dark"><?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></h6>
-                                <button type="button" class="btn btn-sm btn-outline-warning border-0 p-0 px-1 btn-editar-agenda" 
-                                        data-bs-toggle="modal" data-bs-target="#modalEditarAgendamiento"
-                                        data-id="<?php echo $c['id']; ?>" 
-                                        data-fecha="<?php echo htmlspecialchars($c['fecha_cita'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                        data-hora="<?php echo htmlspecialchars($c['hora_cita'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                        data-correo="<?php echo htmlspecialchars($c['correo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                <button type="button" class="btn btn-sm btn-outline-warning border-0 p-0 px-1 btn-editar-agenda"
+                                    data-bs-toggle="modal" data-bs-target="#modalEditarAgendamiento"
+                                    data-id="<?php echo $c['id']; ?>"
+                                    data-fecha="<?php echo htmlspecialchars($c['fecha_cita'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-hora="<?php echo htmlspecialchars($c['hora_cita'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-correo="<?php echo htmlspecialchars($c['correo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                                     <i class="bi bi-clock-history text-dark"></i>
                                 </button>
                             </div>
@@ -112,7 +122,7 @@ foreach ($clientes as $cliente) {
                                 <p class="small text-muted mb-0 text-break"><i class="bi bi-envelope me-1 text-success"></i><?php echo htmlspecialchars($c['correo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                             </div>
                             <button type="button" class="btn btn-sm btn-warning w-100 btn-cita" data-bs-toggle="modal" data-bs-target="#modalCita"
-                                    data-id="<?php echo $c['id']; ?>" data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                data-id="<?php echo $c['id']; ?>" data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                                 Registrar Cita <i class="bi bi-arrow-right"></i>
                             </button>
                         </div>
@@ -129,12 +139,12 @@ foreach ($clientes as $cliente) {
                         <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-start">
                                 <h6 class="fw-bold mb-1 text-dark"><?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></h6>
-                                <button type="button" class="btn btn-sm btn-outline-danger border-0 p-0 px-1 btn-editar-perfilado" 
-                                        data-bs-toggle="modal" data-bs-target="#modalEditarPerfilado"
-                                        data-id="<?php echo $c['id']; ?>" 
-                                        data-rut="<?php echo htmlspecialchars($c['rut'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
-                                        data-genero="<?php echo htmlspecialchars($c['genero'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" 
-                                        data-nacimiento="<?php echo htmlspecialchars($c['fecha_nacimiento'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                <button type="button" class="btn btn-sm btn-outline-danger border-0 p-0 px-1 btn-editar-perfilado"
+                                    data-bs-toggle="modal" data-bs-target="#modalEditarPerfilado"
+                                    data-id="<?php echo $c['id']; ?>"
+                                    data-rut="<?php echo htmlspecialchars($c['rut'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-genero="<?php echo htmlspecialchars($c['genero'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-nacimiento="<?php echo htmlspecialchars($c['fecha_nacimiento'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                                     <i class="bi bi-person-vcard"></i>
                                 </button>
                             </div>
@@ -145,7 +155,7 @@ foreach ($clientes as $cliente) {
                                 <p class="small text-muted mb-0"><i class="bi bi-gender-ambiguous me-1 text-dark"></i>Género: <?php echo htmlspecialchars($c['genero'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
                             </div>
                             <button type="button" class="btn btn-sm btn-danger w-100 btn-cerrar-venta" data-bs-toggle="modal" data-bs-target="#modalCerrarVenta"
-                                    data-id="<?php echo $c['id']; ?>" data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                data-id="<?php echo $c['id']; ?>" data-nombre="<?php echo htmlspecialchars($c['nombre_completo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                                 Cerrar Venta <i class="bi bi-check2-circle"></i>
                             </button>
                         </div>
@@ -172,7 +182,7 @@ foreach ($clientes as $cliente) {
                                 <p class="small text-dark mb-0"><i class="bi bi-box-seam me-1 text-primary"></i><b>Servicio:</b> <?php echo htmlspecialchars($c['producto_nombre'] ?? 'Desconocido', ENT_QUOTES, 'UTF-8'); ?></p>
                                 <p class="small text-success fw-bold mb-0"><i class="bi bi-cash me-1"></i><b>Monto:</b> $<?php echo number_format($c['precio_venta'] ?? 0, 0, ',', '.'); ?></p>
                             </div>
-                            <?php if(!empty($c['documento_venta'])): ?>
+                            <?php if (!empty($c['documento_venta'])): ?>
                                 <a href="../uploads/<?php echo $c['documento_venta']; ?>" target="_blank" class="badge bg-primary text-decoration-none d-inline-block mt-1">
                                     <i class="bi bi-file-earmark-text"></i> Ver Documento
                                 </a>
@@ -190,7 +200,7 @@ foreach ($clientes as $cliente) {
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Nuevo Cliente</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Nuevo Prospecto</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="../ajax/guardar_prospecto.php" method="POST">
@@ -210,7 +220,7 @@ foreach ($clientes as $cliente) {
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-light border text-dark" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary fw-bold px-4">Guardar Cliente</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Guardar Prospecto</button>
                 </div>
             </form>
         </div>
@@ -280,10 +290,10 @@ foreach ($clientes as $cliente) {
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">F. Nacimiento</label>
-                            <input type="date" class="form-control" name="fecha_nacimiento" required 
-                                   min="1900-01-01" 
-                                   max="<?php echo date('Y-m-d', strtotime('-18 years')); ?>" 
-                                   title="El cliente debe ser mayor de edad">
+                            <input type="date" class="form-control" name="fecha_nacimiento" required
+                                min="1900-01-01"
+                                max="<?php echo date('Y-m-d', strtotime('-18 years')); ?>"
+                                title="El cliente debe ser mayor de edad">
                         </div>
                     </div>
                 </div>
@@ -309,14 +319,14 @@ foreach ($clientes as $cliente) {
                         Consolidando venta con: <b id="modalCerrarNombre" class="text-dark"></b>
                     </div>
                     <input type="hidden" name="id_cliente" id="modalCerrarId">
-                    
+
                     <h6 class="fw-bold border-bottom pb-2 mb-3 text-success">1. Detalles Comerciales</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Producto / Servicio</label>
                             <select class="form-select" name="id_producto" required>
                                 <option value="" disabled selected>Selecciona del catálogo...</option>
-                                <?php foreach($productos as $p): ?>
+                                <?php foreach ($productos as $p): ?>
                                     <option value="<?php echo $p['id']; ?>">
                                         <?php echo htmlspecialchars($p['nombre']); ?> - $<?php echo number_format($p['precio'], 0, ',', '.'); ?>
                                     </option>
@@ -330,22 +340,22 @@ foreach ($clientes as $cliente) {
                     </div>
 
                     <h6 class="fw-bold border-bottom pb-2 mb-3 mt-3 text-success">2. Referidos Obligatorios</h6>
-                    
-                    <?php for($i=1; $i<=3; $i++): ?>
-                    <div class="row bg-light p-2 rounded mb-2 border">
-                        <div class="col-md-4">
-                            <label class="small fw-bold">Nombre Ref <?php echo $i; ?></label>
-                            <input type="text" class="form-control form-control-sm input-nombre" name="ref<?php echo $i; ?>_nombre" required maxlength="50" pattern="[A-Za-zÁ-Úá-úñÑ\s]+">
+
+                    <?php for ($i = 1; $i <= 3; $i++): ?>
+                        <div class="row bg-light p-2 rounded mb-2 border">
+                            <div class="col-md-4">
+                                <label class="small fw-bold">Nombre Ref <?php echo $i; ?></label>
+                                <input type="text" class="form-control form-control-sm input-nombre" name="ref<?php echo $i; ?>_nombre" required maxlength="50" pattern="[A-Za-zÁ-Úá-úñÑ\s]+">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small fw-bold">Teléfono Ref <?php echo $i; ?></label>
+                                <input type="text" class="form-control form-control-sm input-telefono" name="ref<?php echo $i; ?>_telefono" required maxlength="9" pattern="^9[0-9]{8}$" placeholder="Ej: 912345678">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small fw-bold">Comuna Ref <?php echo $i; ?></label>
+                                <input type="text" class="form-control form-control-sm input-comuna" name="ref<?php echo $i; ?>_comuna" required maxlength="50">
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="small fw-bold">Teléfono Ref <?php echo $i; ?></label>
-                            <input type="text" class="form-control form-control-sm input-telefono" name="ref<?php echo $i; ?>_telefono" required maxlength="9" pattern="^9[0-9]{8}$" placeholder="Ej: 912345678">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="small fw-bold">Comuna Ref <?php echo $i; ?></label>
-                            <input type="text" class="form-control form-control-sm input-comuna" name="ref<?php echo $i; ?>_comuna" required maxlength="50">
-                        </div>
-                    </div>
                     <?php endfor; ?>
                 </div>
                 <div class="modal-footer bg-light">
@@ -450,9 +460,9 @@ foreach ($clientes as $cliente) {
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Corregir F. Nacimiento</label>
-                            <input type="date" class="form-control" name="fecha_nacimiento" id="editPerfiladoNacimiento" required 
-                                   min="1900-01-01" 
-                                   max="<?php echo date('Y-m-d', strtotime('-18 years')); ?>">
+                            <input type="date" class="form-control" name="fecha_nacimiento" id="editPerfiladoNacimiento" required
+                                min="1900-01-01"
+                                max="<?php echo date('Y-m-d', strtotime('-18 years')); ?>">
                         </div>
                     </div>
                 </div>
@@ -468,103 +478,107 @@ foreach ($clientes as $cliente) {
 <?php include '../includes/footer.php'; ?>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    try {
-        document.querySelectorAll('.btn-agendar').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('modalAgendarId').value = this.getAttribute('data-id');
-                document.getElementById('modalAgendarNombre').innerText = this.getAttribute('data-nombre');
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            document.querySelectorAll('.btn-agendar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('modalAgendarId').value = this.getAttribute('data-id');
+                    document.getElementById('modalAgendarNombre').innerText = this.getAttribute('data-nombre');
+                });
+            });
+
+            document.querySelectorAll('.btn-cita').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('modalCitaId').value = this.getAttribute('data-id');
+                    document.getElementById('modalCitaNombre').innerText = this.getAttribute('data-nombre');
+                });
+            });
+
+            document.querySelectorAll('.btn-cerrar-venta').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('modalCerrarId').value = this.getAttribute('data-id');
+                    document.getElementById('modalCerrarNombre').innerText = this.getAttribute('data-nombre');
+                });
+            });
+
+            document.querySelectorAll('.btn-editar-contacto').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.getElementById('editId').value = this.getAttribute('data-id');
+                    document.getElementById('editNombre').value = this.getAttribute('data-nombre');
+                    document.getElementById('editTelefono').value = this.getAttribute('data-telefono');
+                    document.getElementById('editComuna').value = this.getAttribute('data-comuna');
+                });
+            });
+
+            document.querySelectorAll('.btn-editar-agenda').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.getElementById('editAgendaId').value = this.getAttribute('data-id');
+                    document.getElementById('editAgendaFecha').value = this.getAttribute('data-fecha');
+                    document.getElementById('editAgendaHora').value = this.getAttribute('data-hora');
+                    document.getElementById('editAgendaCorreo').value = this.getAttribute('data-correo');
+                });
+            });
+
+            document.querySelectorAll('.btn-editar-perfilado').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.getElementById('editPerfiladoId').value = this.getAttribute('data-id');
+                    document.getElementById('editPerfiladoRut').value = this.getAttribute('data-rut');
+                    let genero = this.getAttribute('data-genero');
+                    let selectGenero = document.getElementById('editPerfiladoGenero');
+                    if (genero) {
+                        selectGenero.value = genero;
+                    } else {
+                        selectGenero.value = "";
+                    }
+                    document.getElementById('editPerfiladoNacimiento').value = this.getAttribute('data-nacimiento');
+                });
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        document.querySelectorAll('.input-telefono').forEach(input => {
+            input.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
             });
         });
 
-        document.querySelectorAll('.btn-cita').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('modalCitaId').value = this.getAttribute('data-id');
-                document.getElementById('modalCitaNombre').innerText = this.getAttribute('data-nombre');
+        document.querySelectorAll('.input-nombre').forEach(input => {
+            input.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^A-Za-zÁ-Úá-úñÑ\s]/g, '');
             });
         });
 
-        document.querySelectorAll('.btn-cerrar-venta').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('modalCerrarId').value = this.getAttribute('data-id');
-                document.getElementById('modalCerrarNombre').innerText = this.getAttribute('data-nombre');
+        document.querySelectorAll('.input-comuna').forEach(input => {
+            input.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^A-Za-zÁ-Úá-úñÑ\s]/g, '');
             });
         });
 
-        document.querySelectorAll('.btn-editar-contacto').forEach(button => {
-            button.addEventListener('click', function() {
-                document.getElementById('editId').value = this.getAttribute('data-id');
-                document.getElementById('editNombre').value = this.getAttribute('data-nombre');
-                document.getElementById('editTelefono').value = this.getAttribute('data-telefono');
-                document.getElementById('editComuna').value = this.getAttribute('data-comuna');
+        document.querySelectorAll('.input-hora').forEach(input => {
+            input.addEventListener('input', function(e) {
+                if (e.inputType === 'deleteContentBackward') return;
+                let valor = e.target.value.replace(/[^0-9]/g, '');
+                if (valor.length >= 2) {
+                    e.target.value = valor.slice(0, 2) + ':' + valor.slice(2, 4);
+                } else {
+                    e.target.value = valor;
+                }
             });
         });
 
-        document.querySelectorAll('.btn-editar-agenda').forEach(button => {
-            button.addEventListener('click', function() {
-                document.getElementById('editAgendaId').value = this.getAttribute('data-id');
-                document.getElementById('editAgendaFecha').value = this.getAttribute('data-fecha');
-                document.getElementById('editAgendaHora').value = this.getAttribute('data-hora');
-                document.getElementById('editAgendaCorreo').value = this.getAttribute('data-correo');
+        document.querySelectorAll('.input-rut-dinamico').forEach(input => {
+            input.addEventListener('input', function(e) {
+                if (e.inputType === 'deleteContentBackward') return;
+                let valorLimpio = e.target.value.replace(/[^0-9kK]/g, '');
+                if (valorLimpio.length > 1) {
+                    let cuerpo = valorLimpio.slice(0, -1);
+                    let dv = valorLimpio.slice(-1).toUpperCase();
+                    e.target.value = cuerpo + '-' + dv;
+                } else {
+                    e.target.value = valorLimpio;
+                }
             });
-        });
-
-        document.querySelectorAll('.btn-editar-perfilado').forEach(button => {
-            button.addEventListener('click', function() {
-                document.getElementById('editPerfiladoId').value = this.getAttribute('data-id');
-                document.getElementById('editPerfiladoRut').value = this.getAttribute('data-rut');
-                let genero = this.getAttribute('data-genero');
-                let selectGenero = document.getElementById('editPerfiladoGenero');
-                if(genero) { selectGenero.value = genero; } else { selectGenero.value = ""; }
-                document.getElementById('editPerfiladoNacimiento').value = this.getAttribute('data-nacimiento');
-            });
-        });
-    } catch (error) {
-        console.error(error);
-    }
-
-    document.querySelectorAll('.input-telefono').forEach(input => {
-        input.addEventListener('input', function(e) {
-            this.value = this.value.replace(/[^0-9]/g, '');
         });
     });
-
-    document.querySelectorAll('.input-nombre').forEach(input => {
-        input.addEventListener('input', function(e) {
-            this.value = this.value.replace(/[^A-Za-zÁ-Úá-úñÑ\s]/g, '');
-        });
-    });
-
-    document.querySelectorAll('.input-comuna').forEach(input => {
-        input.addEventListener('input', function(e) {
-            this.value = this.value.replace(/[^A-Za-zÁ-Úá-úñÑ\s]/g, '');
-        });
-    });
-
-    document.querySelectorAll('.input-hora').forEach(input => {
-        input.addEventListener('input', function(e) {
-            if (e.inputType === 'deleteContentBackward') return;
-            let valor = e.target.value.replace(/[^0-9]/g, '');
-            if (valor.length >= 2) {
-                e.target.value = valor.slice(0,2) + ':' + valor.slice(2,4);
-            } else {
-                e.target.value = valor;
-            }
-        });
-    });
-
-    document.querySelectorAll('.input-rut-dinamico').forEach(input => {
-        input.addEventListener('input', function (e) {
-            if (e.inputType === 'deleteContentBackward') return; 
-            let valorLimpio = e.target.value.replace(/[^0-9kK]/g, ''); 
-            if (valorLimpio.length > 1) {
-                let cuerpo = valorLimpio.slice(0, -1);
-                let dv = valorLimpio.slice(-1).toUpperCase(); 
-                e.target.value = cuerpo + '-' + dv;
-            } else {
-                e.target.value = valorLimpio;
-            }
-        });
-    });
-});
 </script>

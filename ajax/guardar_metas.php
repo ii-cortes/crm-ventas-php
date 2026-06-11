@@ -3,7 +3,7 @@ session_start();
 require_once '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'admin') {
-    
+
     try {
         $pdo->beginTransaction();
 
@@ -15,12 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
         ];
 
         for ($i = 1; $i <= 4; $i++) {
-            
+
             $meta_diaria = (int)$_POST["meta_diaria_{$i}"];
             $min_amarillo = (int)$_POST["min_amarillo_{$i}"];
             $min_verde = (int)$_POST["min_verde_{$i}"];
-            
-            $etapa_enum = $diccionario_etapas[$i]; 
+
+            $etapa_enum = $diccionario_etapas[$i];
 
             if ($min_amarillo >= $min_verde) {
                 $pdo->rollBack();
@@ -56,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
 
         header("Location: ../admin/dashboard.php?success=1");
         exit();
-
     } catch (PDOException $e) {
         $pdo->rollBack();
         die("Error de BD: " . $e->getMessage());
@@ -65,4 +64,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     header("Location: ../index.php");
     exit();
 }
-?>

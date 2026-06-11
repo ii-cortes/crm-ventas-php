@@ -5,7 +5,7 @@ error_reporting(0);
 require_once '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'vendedor') {
-    
+
     $id_cliente = trim($_POST['id_cliente'] ?? '');
     $id_vendedor = $_SESSION['usuario_id'];
     $fecha_cita = trim($_POST['fecha_cita'] ?? '');
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
                     correo = :correo,
                     etapa_actual = '2' 
                 WHERE id = :id_cliente AND id_vendedor = :id_vendedor AND etapa_actual = '1'";
-        
+
         $stmt = $pdo->prepare($sql);
         $resultado = $stmt->execute([
             ':fecha_cita' => $fecha_cita,
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
         ]);
 
         if ($stmt->rowCount() > 0) {
-            
+
             $env_path = __DIR__ . '/../.env';
             if (!file_exists($env_path)) {
                 die("Error de configuracion.");
@@ -57,13 +57,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
             curl_setopt($chToken, CURLOPT_RETURNTRANSFER, true);
             $resToken = curl_exec($chToken);
             curl_close($chToken);
-            
+
             $jsonToken = json_decode($resToken, true);
             $access_token = $jsonToken['access_token'] ?? '';
 
-            if(!empty($access_token)) {
+            if (!empty($access_token)) {
                 $fin_cita = date('H:i', strtotime($hora_cita) + 3600);
-                
+
                 $event = [
                     'summary' => 'Reunion de Asesoria Comercial',
                     'start' => ['dateTime' => $fecha_cita . 'T' . $hora_cita . ':00-04:00', 'timeZone' => 'America/Santiago'],
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
             $to = $correo;
             $subject = "Invitacion a Reunion Comercial";
             $message = "Hola, tu reunion ha sido agendada con exito para el " . $fecha_cita . " a las " . $hora_cita . " horas.";
-            
+
             $headers = "From: notificaciones@crmfuneraria.cl\r\n";
             if (!empty($correo_vendedor)) {
                 $headers .= "Cc: " . $correo_vendedor . "\r\n";
@@ -105,7 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
         } else {
             die("Error en la actualizacion de etapa.");
         }
-
     } catch (PDOException $e) {
         die("Error BD.");
     }
@@ -113,4 +112,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     header("Location: ../index.php");
     exit();
 }
-?>

@@ -47,10 +47,10 @@ try {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($productos as $p): 
+                            <?php foreach ($productos as $p):
                                 $nombre_str = $p['nombre'];
                                 $desc_str = $p['descripcion_corta'] ?? 'Sin descripción breve';
-                                
+
                                 if (mb_strlen($nombre_str) > 35) {
                                     $nombre_str = mb_substr($nombre_str, 0, 32) . '...';
                                 }
@@ -58,60 +58,62 @@ try {
                                     $desc_str = mb_substr($desc_str, 0, 42) . '...';
                                 }
                             ?>
-                            <tr>
-                                <td class="text-muted fw-bold ps-4">#<?php echo $p['id']; ?></td>
-                                <td>
-                                    <div class="fw-bold text-dark" title="<?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?>">
-                                        <?php echo htmlspecialchars($nombre_str, ENT_QUOTES, 'UTF-8'); ?>
-                                    </div>
-                                    <small class="text-muted d-block" title="<?php echo htmlspecialchars($p['descripcion_larga'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
-                                        <?php echo htmlspecialchars($desc_str, ENT_QUOTES, 'UTF-8'); ?>
-                                    </small>
-                                </td>
-                                <td>
-                                    <span class="badge bg-dark text-white border px-2 py-1"><?php echo htmlspecialchars($p['tipo'] ?? 'General', ENT_QUOTES, 'UTF-8'); ?></span>
-                                </td>
-                                <td class="text-success fw-bold">$<?php echo number_format($p['precio'], 0, ',', '.'); ?></td>
-                                <td>
-                                    <?php if ($p['estado_prod'] == 1): ?>
-                                        <span class="badge bg-success">Activo</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-danger">Inactivo</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="pe-4">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <button class="btn btn-sm btn-outline-primary btn-editar-prod" 
+                                <tr>
+                                    <td class="text-muted fw-bold ps-4">#<?php echo $p['id']; ?></td>
+                                    <td>
+                                        <div class="fw-bold text-dark" title="<?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?>">
+                                            <?php echo htmlspecialchars($nombre_str, ENT_QUOTES, 'UTF-8'); ?>
+                                        </div>
+                                        <small class="text-muted d-block" title="<?php echo htmlspecialchars($p['descripcion_larga'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                            <?php echo htmlspecialchars($desc_str, ENT_QUOTES, 'UTF-8'); ?>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-dark text-white border px-2 py-1"><?php echo htmlspecialchars($p['tipo'] ?? 'General', ENT_QUOTES, 'UTF-8'); ?></span>
+                                    </td>
+                                    <td class="text-success fw-bold">$<?php echo number_format($p['precio'], 0, ',', '.'); ?></td>
+                                    <td>
+                                        <?php if ($p['estado_prod'] == 1): ?>
+                                            <span class="badge bg-success">Activo</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-danger">Inactivo</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="pe-4">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button class="btn btn-sm btn-outline-primary btn-editar-prod"
                                                 data-bs-toggle="modal" data-bs-target="#modalEditarProducto"
                                                 data-id="<?php echo $p['id']; ?>"
                                                 data-nombre="<?php echo htmlspecialchars($p['nombre'], ENT_QUOTES, 'UTF-8'); ?>"
-                                                data-precio="<?php echo $p['precio']; ?>" 
+                                                data-precio="<?php echo $p['precio']; ?>"
                                                 data-tipo="<?php echo htmlspecialchars($p['tipo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                                 data-desccorta="<?php echo htmlspecialchars($p['descripcion_corta'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                                 data-desclarga="<?php echo htmlspecialchars($p['descripcion_larga'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                                 title="Editar">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        
-                                        <form action="../ajax/estado_producto.php" method="POST" class="m-0 p-0">
-                                            <input type="hidden" name="id_producto" value="<?php echo $p['id']; ?>">
-                                            <input type="hidden" name="estado_actual" value="<?php echo $p['estado_prod']; ?>">
-                                            <?php if ($p['estado_prod'] == 1): ?>
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar">
-                                                    <i class="bi bi-eye-slash"></i>
-                                                </button>
-                                            <?php else: ?>
-                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Activar">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                            <?php endif; ?>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+
+                                            <form action="../ajax/estado_producto.php" method="POST" class="m-0 p-0">
+                                                <input type="hidden" name="id_producto" value="<?php echo $p['id']; ?>">
+                                                <input type="hidden" name="estado_actual" value="<?php echo $p['estado_prod']; ?>">
+                                                <?php if ($p['estado_prod'] == 1): ?>
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar">
+                                                        <i class="bi bi-eye-slash"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Activar">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                <?php endif; ?>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
-                            <?php if(empty($productos)): ?>
-                                <tr><td colspan="6" class="text-center text-muted py-4">No hay productos en el catálogo.</td></tr>
+                            <?php if (empty($productos)): ?>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No hay productos en el catálogo.</td>
+                                </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -207,22 +209,22 @@ try {
 <?php include '../includes/footer.php'; ?>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.btn-editar-prod').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.getElementById('editProdId').value = this.getAttribute('data-id');
-            document.getElementById('editProdNombre').value = this.getAttribute('data-nombre');
-            document.getElementById('editProdPrecio').value = Math.round(this.getAttribute('data-precio'));
-            document.getElementById('editProdTipo').value = this.getAttribute('data-tipo');
-            document.getElementById('editProdDescCorta').value = this.getAttribute('data-desccorta');
-            document.getElementById('editProdDescLarga').value = this.getAttribute('data-desclarga');
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.btn-editar-prod').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('editProdId').value = this.getAttribute('data-id');
+                document.getElementById('editProdNombre').value = this.getAttribute('data-nombre');
+                document.getElementById('editProdPrecio').value = Math.round(this.getAttribute('data-precio'));
+                document.getElementById('editProdTipo').value = this.getAttribute('data-tipo');
+                document.getElementById('editProdDescCorta').value = this.getAttribute('data-desccorta');
+                document.getElementById('editProdDescLarga').value = this.getAttribute('data-desclarga');
+            });
         });
-    });
 
-    document.querySelectorAll('.input-precio').forEach(input => {
-        input.addEventListener('input', function(e) {
-            this.value = this.value.replace(/[^0-9]/g, '');
+        document.querySelectorAll('.input-precio').forEach(input => {
+            input.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
         });
     });
-});
 </script>

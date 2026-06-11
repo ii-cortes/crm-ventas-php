@@ -3,10 +3,10 @@ session_start();
 require_once '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'vendedor') {
-    
+
     $id_cliente = $_POST['id_cliente'];
     $id_vendedor = $_SESSION['usuario_id'];
-    
+
     $rut = trim($_POST['rut']);
     $genero = $_POST['genero'];
     $fecha_nacimiento = $_POST['fecha_nacimiento'];
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
                     genero = :genero, 
                     fecha_nacimiento = :fecha_nacimiento 
                 WHERE id = :id_cliente AND id_vendedor = :id_vendedor AND etapa_actual = '3'";
-        
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':rut' => $rut,
@@ -29,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
 
         header("Location: ../vendedor/embudo.php?success=perfilado_editado");
         exit();
-
     } catch (PDOException $e) {
         die("Error al corregir el perfilado: " . $e->getMessage());
     }
@@ -37,4 +36,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     header("Location: ../index.php");
     exit();
 }
-?>

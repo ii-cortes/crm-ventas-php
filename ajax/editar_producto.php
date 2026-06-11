@@ -3,7 +3,7 @@ session_start();
 require_once '../includes/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'admin') {
-    
+
     $id = $_POST['id_producto'] ?? '';
     $nombre = trim($_POST['nombre'] ?? '');
     $tipo = trim($_POST['tipo'] ?? '');
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
                     descripcion_corta = :descripcion_corta, 
                     descripcion_larga = :descripcion_larga 
                 WHERE id = :id";
-        
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':nombre' => $nombre,
@@ -36,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
 
         header("Location: ../admin/catalogo.php?success=editado");
         exit();
-
     } catch (PDOException $e) {
         die("Error crítico al actualizar el catálogo SQL: " . $e->getMessage());
     }
@@ -44,4 +43,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['usuario_rol']) && 
     header("Location: ../index.php");
     exit();
 }
-?>
