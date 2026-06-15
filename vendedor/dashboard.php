@@ -98,9 +98,6 @@ try {
     die('Error en el acceso a datos: ' . $e->getMessage());
 }
 
-// ---------------------------------------------------------------
-// ARREGLO DINÁMICO: Volvemos a "Prospectos" por regla de negocio
-// ---------------------------------------------------------------
 $nombres_etapas = [
     1 => 'Prospectos',
     2 => 'Agendados',
@@ -266,7 +263,6 @@ if ($ventas_actuales > 0) {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Inyectamos el array de PHP hacia JavaScript usando JSON
         const etapas = <?php echo json_encode(array_values($nombres_etapas)); ?>;
 
         const datosLogros = [<?php echo $logros[1]; ?>, <?php echo $logros[2]; ?>, <?php echo $logros[3]; ?>, <?php echo $logros[4]; ?>];
